@@ -1,0 +1,20 @@
+{
+  "name": "jejak",
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "private": true,
+  "scripts": {
+    "dev": "bun run --filter \"*\" dev",
+    "dev:ui": "bun run --filter \"ui\" dev",
+    "dev:api": "bun run --filter \"api\" dev"
+  },
+  "type": "module",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
+}
