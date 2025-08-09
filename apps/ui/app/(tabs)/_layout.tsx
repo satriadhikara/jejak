@@ -17,7 +17,7 @@ export default function TabLayout() {
                     height: 90,
                     paddingTop: 10,
                     paddingBottom: 10,
-                    paddingHorizontal: 10,
+                    paddingHorizontal: 5,
                 },
             }}
         >
