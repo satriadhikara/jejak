@@ -11,4 +11,5 @@ module.exports = {
     extend: {},
   },
   plugins: [],
+  nativewind: { rem: 16 },
 }
