@@ -1,12 +1,24 @@
 import { Tabs } from "expo-router";
-import { House, SearchCheck, Crown, ClipboardClock } from "lucide-react-native";
-import { Text } from "react-native";
+import {
+    House,
+    SearchCheck,
+    Crown,
+    ClipboardClock,
+    Camera,
+} from "lucide-react-native";
+import { Text, View } from "react-native";
 
 export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
                 headerShown: false,
+                tabBarStyle: {
+                    height: 90,
+                    paddingTop: 10,
+                    paddingBottom: 10,
+                    paddingHorizontal: 10,
+                },
             }}
         >
             <Tabs.Screen
@@ -28,6 +40,7 @@ export default function TabLayout() {
                     ),
                 }}
             />
+
             <Tabs.Screen
                 name="pindai"
                 options={{
@@ -50,6 +63,27 @@ export default function TabLayout() {
                     ),
                 }}
             />
+
+            <Tabs.Screen
+                name="camera"
+                options={{
+                    title: "",
+                    tabBarIcon: () => (
+                        <View
+                            style={{
+                                marginTop: 20,
+                                backgroundColor: "#263189",
+                                borderRadius: 50,
+                                padding: 16,
+                            }}
+                        >
+                            <Camera color="#00D9A3" strokeWidth={2} />
+                        </View>
+                    ),
+                    tabBarLabel: () => null,
+                }}
+            />
+
             <Tabs.Screen
                 name="peringkat"
                 options={{
@@ -69,6 +103,7 @@ export default function TabLayout() {
                     ),
                 }}
             />
+
             <Tabs.Screen
                 name="riwayat"
                 options={{
