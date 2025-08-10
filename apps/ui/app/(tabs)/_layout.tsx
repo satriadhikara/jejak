@@ -1,3 +1,4 @@
+import "react-native-gesture-handler";
 import { Tabs } from "expo-router";
 import {
     House,
@@ -127,5 +128,6 @@ export default function TabLayout() {
                 }}
             />
         </Tabs>
+
     );
 }
