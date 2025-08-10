@@ -2,6 +2,7 @@ import LeaderboardCard from "@/components/peringkat/LeaderboardCard";
 import Top3LeaderboardCard from "@/components/peringkat/Top3LeaderboardCard";
 import { View, Text } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import ProfileButton from "@/components/ProfileButton";
 
 const LeaderboardsData = [
     { rank: 1, avatar: "", name: "Bryan Wolf", points: 50 },
@@ -31,10 +32,9 @@ export default function Peringkat() {
             <SafeAreaView edges={["top"]} className="flex-1">
                 <View className="flex-1 justify-between">
                     {/* Top header */}
-                    <View className="px-6 flex-row justify-between items-center">
+                    <View className="px-6 flex-row justify-between items-center pt-4">
                         <Text className="text-2xl font-bold">Peringkat</Text>
-                        {/* Placeholder avatar */}
-                        <View className="size-9 bg-black rounded-full" />
+                        <ProfileButton />
                     </View>
 
                     {/* Middle section (Top 3) */}
