@@ -1,0 +1,19 @@
+# VCS
+.git
+
+# Dependencies
+node_modules
+bun.lockb
+
+# Local env & editor
+.env
+.env.local
+.env.*.local
+.DS_Store
+.idea
+.vscode
+
+# Build artifacts
+dist
+build
+coverage
