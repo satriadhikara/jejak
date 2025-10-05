@@ -24,7 +24,7 @@ jobs:
               uses: docker/build-push-action@v5
               with:
                   context: ./apps/api
-                  file: ./apps/api/Dockerfile
+                  file: ./Dockerfile
                   push: true
                   tags: |
                       satriadhikara/jejak-api:latest
