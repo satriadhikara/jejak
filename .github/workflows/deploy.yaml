@@ -1,0 +1,31 @@
+name: Build Docker images
+
+on:
+    push:
+        branches: ["main", "develop"]
+        paths:
+            - "apps/api/**"
+
+jobs:
+    build-and-push-dockerfile-image:
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Log in to Docker Hub
+              uses: docker/login-action@v3
+              with:
+                  username: ${{ secrets.DOCKERHUB_USERNAME }} # Make sure to add the secrets in your repository in -> Settings -> Secrets (Actions) -> New repository secret
+                  password: ${{ secrets.DOCKERHUB_TOKEN }} # Make sure to add the secrets in your repository in -> Settings -> Secrets (Actions) -> New repository secret
+
+            - name: Build and push Docker image
+              uses: docker/build-push-action@v5
+              with:
+                  context: ./apps/api
+                  file: ./apps/api/Dockerfile
+                  push: true
+                  tags: |
+                      satriadhikara/jejak-api:latest
+                  platforms: linux/amd64
