@@ -27,11 +27,15 @@ src/
   lib/
     env.ts            # Zod-validated environment loader
     auth.ts           # Better Auth configuration
+  validators/
+    leaderboard.ts    # zValidator-powered schemas for leaderboard routes
   routes/
     index.ts          # Registers feature routers with app.route()
     health.route.ts   # Example feature router (inline handlers per Hono guide)
+    leaderboard.route.ts # Points leaderboard endpoints
   services/
     health.service.ts # Business logic and Drizzle access (domain-focused)
+    leaderboard.service.ts # Leaderboard queries against Drizzle models
   db/
     schema.ts         # Drizzle schema definitions
     index.ts          # Drizzle client setup
@@ -49,6 +53,18 @@ src/
 - Place domain logic and Drizzle ORM calls inside `src/services`. Keep functions pure and return plain data objects.
 - Inject services into route handlers directly; the handler should only parse request input, call the service, and format the response.
 - Share DTOs or validation schemas via dedicated modules (e.g. `src/schemas`) if needed.
+
+## Request Validation
+
+- Use [`@hono/zod-validator`](https://github.com/honojs/middleware/tree/main/packages/zod-validator) to guard incoming requests.
+- Define reusable schemas in `src/validators` and export configured middlewares (e.g. `leaderboardTopQueryValidator`).
+- In routes, attach the validator as middleware so `c.req.valid("query")` exposes strongly-typed, sanitized inputs.
+
+## Leaderboard Endpoint
+
+- `GET /leaderboard/top`: returns the top users ordered by `points` with an optional `limit` query param (default 10, max 100).
+- The handler relies on `leaderboardTopQueryValidator` to coerce and bound `limit`, and `getTopUsersByPoints` to fetch the data via Drizzle.
+- Response shape: `{ data: Array<{ id, name, image, points }> }`.
 
 ## Adding a New Feature
 
