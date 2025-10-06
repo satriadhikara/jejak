@@ -22,23 +22,33 @@ The app listens on `http://localhost:3000` by default.
 
 ```
 src/
-  app.ts              # Hono instance with global middleware and base path
-  index.ts            # Bun entrypoint exporting { port, fetch }
+  app.ts                   # Hono instance with global middleware and base path
+  index.ts                 # Bun entrypoint exporting { port, fetch }
   lib/
-    env.ts            # Zod-validated environment loader
-    auth.ts           # Better Auth configuration
+    env.ts                 # Zod-validated environment loader
+    auth.ts                # Better Auth configuration
   validators/
-    leaderboard.ts    # zValidator-powered schemas for leaderboard routes
+    leaderboard.ts         # zValidator-powered schemas for leaderboard routes
   routes/
-    index.ts          # Registers feature routers with app.route()
-    health.route.ts   # Example feature router (inline handlers per Hono guide)
-    leaderboard.route.ts # Points leaderboard endpoints
+    index.ts               # Registers feature routers with app.route()
+    health.route.ts        # Route factory for health endpoints
+    leaderboard.route.ts   # Route factory for leaderboard endpoints
   services/
-    health.service.ts # Business logic and Drizzle access (domain-focused)
+    health.service.ts      # Business logic with dependency inject-able factory
     leaderboard.service.ts # Leaderboard queries against Drizzle models
   db/
-    schema.ts         # Drizzle schema definitions
-    index.ts          # Drizzle client setup
+    schema.ts              # Drizzle schema definitions
+    index.ts               # Drizzle client setup
+tests/
+  setup.ts                 # bun test preloads (env validation, globals)
+  integration/
+    app.test.ts            # End-to-end contract for the HTTP server
+  routes/
+    health.route.test.ts   # Route-level contract tests
+    leaderboard.route.test.ts
+  services/
+    health.service.test.ts # Unit tests for domain logic
+    leaderboard.service.test.ts
 ```
 
 ## Routing Guidelines
@@ -78,9 +88,41 @@ src/
    ```
 4. Wire up middleware or validation as needed.
 
+### Service and Router Factories
+
+- Each service exports a `create...Service` factory that receives its dependencies (database client, logger, time helpers). This keeps functions pure, simplifies mocking, and matches Hono’s lightweight philosophy.
+- Route modules export `create...Router` factories so tests can instantiate isolated routers without bootstrapping the entire app.
+- Default singletons are exported for runtime use (`export default create...Router()`), mirroring Bun’s module caching while remaining test friendly.
+
 Following this pattern keeps the API consistent with Hono’s best practices while leaving room for modular expansion.
 
 ## Environment Variables
 
 - Define required variables in `.env` (`DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, `CLIENT_ORIGIN`, optional `PORT`).
 - `src/lib/env.ts` validates values on startup with Zod v4—misconfigured environments throw immediately with contextual error logs.
+
+## Testing
+
+- All tests run with [Bun Test](https://bun.sh/docs/test). Preload configuration lives in `bunfig.toml`, which ensures environment validation runs once per test process.
+- Execute the full suite:
+
+  ```sh
+  bun test
+  ```
+
+- Watch for changes:
+
+  ```sh
+  bun test --watch
+  ```
+
+- Generate coverage reports (HTML + text):
+
+  ```sh
+  bun test --coverage
+  ```
+
+- Tests are organised by layer to keep feedback focused:
+  - `tests/services` for pure domain logic with injected dependencies.
+  - `tests/routes` for router-level contracts using in-memory Hono requests.
+  - `tests/integration` for end-to-end checks against the Bun server.

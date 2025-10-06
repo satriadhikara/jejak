@@ -3,14 +3,28 @@ import { Hono } from "hono";
 import { leaderboardTopQueryValidator } from "@/validators/leaderboard.validator";
 import { getTopUsersByPoints } from "@/services/leaderboard.service";
 
-const leaderboardRoutes = new Hono();
+type LeaderboardRouteDependencies = {
+  getTopUsersByPoints: typeof getTopUsersByPoints;
+};
 
-leaderboardRoutes.get("/top", leaderboardTopQueryValidator, async (c) => {
-  const { limit } = c.req.valid("query");
+const defaultDependencies: LeaderboardRouteDependencies = {
+  getTopUsersByPoints,
+};
 
-  const leaderboard = await getTopUsersByPoints(limit);
+export const createLeaderboardRouter = (
+  deps: LeaderboardRouteDependencies = defaultDependencies,
+) => {
+  const router = new Hono();
 
-  return c.json({ data: leaderboard });
-});
+  router.get("/top", leaderboardTopQueryValidator, async (c) => {
+    const { limit } = c.req.valid("query");
 
-export default leaderboardRoutes;
+    const leaderboard = await deps.getTopUsersByPoints(limit);
+
+    return c.json({ data: leaderboard });
+  });
+
+  return router;
+};
+
+export default createLeaderboardRouter();
