@@ -1,17 +1,14 @@
 import { Hono } from "hono";
 
+import { leaderboardTopQueryValidator } from "@/validators/leaderboard.validator";
 import { getTopUsersByPoints } from "@/services/leaderboard.service";
 
 const leaderboardRoutes = new Hono();
 
-leaderboardRoutes.get("/top", async (c) => {
-  const limitParam = c.req.query("limit");
-  const parsedLimit = limitParam ? Number.parseInt(limitParam, 10) : 10;
-  const limit = Number.isNaN(parsedLimit)
-    ? 10
-    : Math.min(Math.max(parsedLimit, 1), 100);
+leaderboardRoutes.get("/top", leaderboardTopQueryValidator, async (c) => {
+  const { limit } = c.req.valid("query");
 
-  const leaderboard = await getTopUsersByPoints(limit);
+  const leaderboard = await getTopUsersByPoints(limit ?? 10);
 
   return c.json({ data: leaderboard });
 });
