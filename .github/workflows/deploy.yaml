@@ -16,6 +16,11 @@ jobs:
                 && (github.event.workflow_run.head_branch == 'main'
                     || github.event.workflow_run.head_branch == 'develop')
             }}
+        env:
+            DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+            BETTER_AUTH_SECRET: ${{ secrets.API_BETTER_AUTH_SECRET }}
+            BETTER_AUTH_URL: ${{ secrets.API_BETTER_AUTH_URL }}
+            CLIENT_ORIGIN: ${{ secrets.API_CLIENT_ORIGIN }}
 
         steps:
             - name: Checkout repository

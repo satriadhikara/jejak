@@ -3,7 +3,7 @@
   "scripts": {
     "dev": "bun run --hot src/index.ts",
     "lint": "oxlint src tests --deny-warnings",
-    "test": "bun test",
+    "test": "bun test --env-file .env.test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "db:studio": "drizzle-kit studio"

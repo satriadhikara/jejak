@@ -141,3 +141,6 @@ Following this pattern keeps the API consistent with Hono’s best practices whi
 
 - Pull requests automatically run `bun test` via GitHub Actions (`.github/workflows/test.yaml`).
 - Docker images only build from `develop` and `main` after tests succeed (`.github/workflows/deploy.yaml`).
+- Tests in CI rely on secrets `DATABASE_URL`, `BETTER_AUTH_SECRET`, `BETTER_AUTH_URL`, and `CLIENT_ORIGIN`. Define them in repo or environment secrets.
+- Local tests load `.env.test` by default (via `bun test --env-file .env.test`). Copy `.env.example` or create your own file with real values if needed.
+- Provide production-like values in CI to keep env validation meaningful.
