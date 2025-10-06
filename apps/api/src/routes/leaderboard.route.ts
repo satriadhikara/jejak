@@ -8,7 +8,7 @@ const leaderboardRoutes = new Hono();
 leaderboardRoutes.get("/top", leaderboardTopQueryValidator, async (c) => {
   const { limit } = c.req.valid("query");
 
-  const leaderboard = await getTopUsersByPoints(limit ?? 10);
+  const leaderboard = await getTopUsersByPoints(limit);
 
   return c.json({ data: leaderboard });
 });
