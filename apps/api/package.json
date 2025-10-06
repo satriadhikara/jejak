@@ -2,6 +2,7 @@
   "name": "api",
   "scripts": {
     "dev": "bun run --hot src/index.ts",
+    "lint": "oxlint src tests --deny-warnings",
     "test": "bun test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
@@ -17,6 +18,7 @@
   "devDependencies": {
     "@types/bun": "^1.2.23",
     "drizzle-kit": "^0.31.5",
+    "oxlint": "^1.19.0",
     "pg": "^8.16.3"
   }
 }

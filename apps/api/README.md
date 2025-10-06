@@ -126,3 +126,18 @@ Following this pattern keeps the API consistent with Hono’s best practices whi
   - `tests/services` for pure domain logic with injected dependencies.
   - `tests/routes` for router-level contracts using in-memory Hono requests.
   - `tests/integration` for end-to-end checks against the Bun server.
+
+## Linting
+
+- JavaScript/TypeScript linting uses [Oxlint](https://oxc.rs/docs/guide/usage/linter.html) for speed and broad rule coverage.
+- Configuration lives in `.oxlintrc.json`; warnings fail with `deny: "warnings"`.
+- Run locally:
+
+  ```sh
+  bun run lint
+  ```
+
+## CI
+
+- Pull requests automatically run `bun test` via GitHub Actions (`.github/workflows/test.yaml`).
+- Docker images only build from `develop` and `main` after tests succeed (`.github/workflows/deploy.yaml`).
