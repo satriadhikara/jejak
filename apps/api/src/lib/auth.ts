@@ -11,6 +11,16 @@ export const auth = betterAuth({
   }),
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
+  user: {
+    additionalFields: {
+      points: {
+        type: "number",
+        required: false,
+        defaultValue: 0,
+        input: false,
+      },
+    },
+  },
 });
 
 export type AuthContextVariables = {
