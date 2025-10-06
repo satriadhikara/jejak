@@ -42,7 +42,7 @@ describe("leaderboard routes", () => {
     expect(getTopUsersByPoints).toHaveBeenCalledWith(5);
   });
 
-  it("validates query params", async () => {
+  it("rejects non-positive limits", async () => {
     const getTopUsersByPoints = mock();
 
     const router = createLeaderboardRouter({ getTopUsersByPoints });
@@ -51,7 +51,44 @@ describe("leaderboard routes", () => {
       request("http://localhost/top?limit=0"),
     );
 
-    expect(response.status).toBe(400);
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Request validation failed.",
+        issues: [
+          {
+            code: "too_small",
+            path: ["limit"],
+          },
+        ],
+      },
+    });
+    expect(getTopUsersByPoints).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-numeric limits", async () => {
+    const getTopUsersByPoints = mock();
+
+    const router = createLeaderboardRouter({ getTopUsersByPoints });
+
+    const response = await router.request(
+      request("http://localhost/top?limit=abc"),
+    );
+
+    expect(response.status).toBe(422);
+    expect(await response.json()).toMatchObject({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Request validation failed.",
+        issues: [
+          {
+            code: "invalid_type",
+            path: ["limit"],
+          },
+        ],
+      },
+    });
     expect(getTopUsersByPoints).not.toHaveBeenCalled();
   });
 });
