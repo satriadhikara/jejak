@@ -1,13 +1,15 @@
 import { HTTPException } from "hono/http-exception";
 import type { Hook } from "@hono/zod-validator";
+import type { Env, ValidationTargets } from "hono";
+import { z } from "zod";
 
-type ValidationIssue = {
+export type ValidationIssue = {
   code: string;
   message: string;
   path: string[];
 };
 
-type ValidationErrorResponse = {
+export type ValidationErrorPayload = {
   error: {
     code: "VALIDATION_ERROR";
     message: string;
@@ -42,7 +44,9 @@ const formatIssues = (value: unknown): ValidationIssue[] | null => {
   return mapped.length > 0 ? mapped : null;
 };
 
-const extractIssues = (value: unknown): ValidationIssue[] | null => {
+export const extractValidationIssues = (
+  value: unknown,
+): ValidationIssue[] | null => {
   if (!value) {
     return null;
   }
@@ -55,7 +59,7 @@ const extractIssues = (value: unknown): ValidationIssue[] | null => {
   if (typeof value === "string") {
     try {
       const parsed = JSON.parse(value);
-      return extractIssues(parsed);
+      return extractValidationIssues(parsed);
     } catch {
       return null;
     }
@@ -72,11 +76,11 @@ const extractIssues = (value: unknown): ValidationIssue[] | null => {
     }
 
     if ("message" in record && typeof record.message === "string") {
-      return extractIssues(record.message);
+      return extractValidationIssues(record.message);
     }
 
     if ("error" in record) {
-      const nested = extractIssues(record.error);
+      const nested = extractValidationIssues(record.error);
       if (nested) {
         return nested;
       }
@@ -86,20 +90,31 @@ const extractIssues = (value: unknown): ValidationIssue[] | null => {
   return null;
 };
 
-export const formatValidationResult: Hook<any, any, any> = (result, c) => {
-  if (!result.success && result.error) {
-    const issues = extractIssues(result.error);
+const VALIDATION_MESSAGE = "Request validation failed.";
 
-    const payload: ValidationErrorResponse = {
-      error: {
-        code: "VALIDATION_ERROR",
-        message: "Request validation failed.",
-        issues: issues ?? [],
-      },
-    };
+export const createValidationErrorPayload = (
+  issues: ValidationIssue[] = [],
+): ValidationErrorPayload => ({
+  error: {
+    code: "VALIDATION_ERROR",
+    message: VALIDATION_MESSAGE,
+    issues,
+  },
+});
+
+export const formatValidationResult: Hook<
+  unknown,
+  Env,
+  string,
+  keyof ValidationTargets,
+  {},
+  z.ZodTypeAny
+> = (result, c) => {
+  if (!result.success && result.error) {
+    const issues = extractValidationIssues(result.error) ?? [];
 
     throw new HTTPException(422, {
-      res: c.json(payload, 422),
+      res: c.json(createValidationErrorPayload(issues), 422),
     });
   }
 };
