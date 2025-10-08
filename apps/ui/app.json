@@ -4,17 +4,37 @@
     "slug": "jejak",
     "version": "1.0.0",
     "scheme": "jejak",
-    "platforms": [
-      "ios",
-      "android"
-    ],
+    "platforms": ["ios", "android"],
     "web": {
       "bundler": "metro",
       "output": "static",
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
-      "expo-router"
+      "expo-router",
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Inter_28pt-Thin.ttf",
+            "./assets/fonts/Inter_28pt-ExtraLight.ttf",
+            "./assets/fonts/Inter_28pt-Light.ttf",
+            "./assets/fonts/Inter_28pt-Regular.ttf",
+            "./assets/fonts/Inter_28pt-Medium.ttf",
+            "./assets/fonts/Inter_28pt-SemiBold.ttf",
+            "./assets/fonts/Inter_28pt-Bold.ttf",
+            "./assets/fonts/Inter_28pt-ExtraBold.ttf",
+            "./assets/fonts/Inter_28pt-Black.ttf"
+          ]
+        }
+      ],
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#161B50",
+          "image": "./assets/splash.png"
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,
@@ -23,16 +43,10 @@
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
-    "splash": {
-      "image": "./assets/splash.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.jejak.app"
     },
     "android": {
       "adaptiveIcon": {
