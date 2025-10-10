@@ -19,6 +19,8 @@ jobs:
       BETTER_AUTH_SECRET: ${{ secrets.API_BETTER_AUTH_SECRET }}
       BETTER_AUTH_URL: ${{ secrets.API_BETTER_AUTH_URL }}
       CLIENT_ORIGIN: ${{ secrets.API_CLIENT_ORIGIN }}
+      GOOGLE_CLIENT_ID: ${{ secrets.API_GOOGLE_CLIENT_ID }}
+      GOOGLE_CLIENT_SECRET: ${{ secrets.API_GOOGLE_CLIENT_SECRET }}
 
     steps:
       - name: Checkout repository
