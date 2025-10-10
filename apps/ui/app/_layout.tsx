@@ -1,15 +1,19 @@
-import "react-native-gesture-handler";
-import "./global.css";
-import { Stack } from "expo-router";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import '../global.css';
 
-export default function RootLayout() {
+import { Stack } from 'expo-router';
+import * as SplashScreen from 'expo-splash-screen';
+
+SplashScreen.setOptions({
+  duration: 1000,
+  fade: true,
+});
+
+export default function Layout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <BottomSheetModalProvider>
-        <Stack screenOptions={{ headerShown: false }} />
-      </BottomSheetModalProvider>
-    </GestureHandlerRootView>
+    <Stack
+      screenOptions={{
+        headerShown: false,
+      }}
+    />
   );
 }

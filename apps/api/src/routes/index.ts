@@ -1,11 +1,27 @@
 import { Hono } from "hono";
 
-import healthRoutes from "@/routes/health.route";
+import { createHealthRouter } from "@/routes/health.route";
 import authRoutes from "@/routes/auth.route";
+import { createLeaderboardRouter } from "@/routes/leaderboard.route";
 
-const routes = new Hono();
+type RoutesDependencies = {
+  healthRouter?: Hono;
+  authRouter?: Hono;
+  leaderboardRouter?: Hono;
+};
 
-routes.route("/health", healthRoutes);
-routes.route("/auth", authRoutes);
+export const createRoutes = ({
+  healthRouter = createHealthRouter(),
+  authRouter = authRoutes,
+  leaderboardRouter = createLeaderboardRouter(),
+}: RoutesDependencies = {}) => {
+  const routes = new Hono();
 
-export default routes;
+  routes.route("/health", healthRouter);
+  routes.route("/auth", authRouter);
+  routes.route("/leaderboard", leaderboardRouter);
+
+  return routes;
+};
+
+export default createRoutes();

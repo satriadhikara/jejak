@@ -1,14 +1,23 @@
 name: Build Docker images
 
 on:
-    push:
-        branches: ["main", "develop"]
-        paths:
-            - "apps/api/**"
+    workflow_run:
+        workflows:
+            - Test API
+        types:
+            - completed
 
 jobs:
     build-and-push-dockerfile-image:
         runs-on: ubuntu-latest
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        env:
+            DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
+            BETTER_AUTH_SECRET: ${{ secrets.API_BETTER_AUTH_SECRET }}
+            BETTER_AUTH_URL: ${{ secrets.API_BETTER_AUTH_URL }}
+            CLIENT_ORIGIN: ${{ secrets.API_CLIENT_ORIGIN }}
+            GOOGLE_CLIENT_ID: ${{ secrets.API_GOOGLE_CLIENT_ID }}
+            GOOGLE_CLIENT_SECRET: ${{ secrets.API_GOOGLE_CLIENT_SECRET }}
 
         steps:
             - name: Checkout repository
