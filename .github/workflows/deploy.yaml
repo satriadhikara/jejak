@@ -1,16 +1,15 @@
 name: Build Docker images
 
 on:
-    workflow_run:
-        workflows:
-            - Test API
-        types:
-            - completed
+    push:
+        branches: ["main", "develop"]
+        paths:
+            - "apps/api/**"
 
 jobs:
     build-and-push-dockerfile-image:
         runs-on: ubuntu-latest
-        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+
         env:
             DATABASE_URL: ${{ secrets.API_DATABASE_URL }}
             BETTER_AUTH_SECRET: ${{ secrets.API_BETTER_AUTH_SECRET }}
