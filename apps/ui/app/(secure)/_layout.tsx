@@ -1,7 +1,7 @@
-import { Redirect, Stack } from "expo-router";
-import { useSession } from "@/lib/auth-client";
-import { ActivityIndicator, View, Text } from "react-native";
-import { SessionProvider } from "@/lib/session-context";
+import { Redirect, Stack } from 'expo-router';
+import { useSession } from '@/lib/auth-client';
+import { ActivityIndicator, View, Text } from 'react-native';
+import { SessionProvider } from '@/lib/session-context';
 
 export default function Layout() {
   const { data: session, isPending, error } = useSession();

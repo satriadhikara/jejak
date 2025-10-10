@@ -1,59 +1,65 @@
-import React from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  ScrollView,
-  TouchableOpacity,
-  Image,
-} from "react-native";
-import { Avatar, Card } from "react-native-paper";
-import { Ionicons } from "@expo/vector-icons";
-import { useSessionContext } from "@/lib/session-context";
+import React from 'react';
+import { View, Text, ScrollView, TouchableOpacity, Image, Pressable } from 'react-native';
+import { Avatar, Card } from 'react-native-paper';
+import { Ionicons } from '@expo/vector-icons';
+import { useSessionContext } from '@/lib/session-context';
+import { router } from 'expo-router';
 
-const reportHistory = [
-  {
-    id: 1,
-    title: "Kerusakan Trotoar ITB Ganesha",
-    date: "3 Oktober 2025",
-    location: "Jl. Ganesa No.10, Lb. Siliwangi...",
-    status: "Diperiksa",
-    statusColor: "#717680",
-    statusBgColor: "#F5F5F6",
-  },
-  {
-    id: 2,
-    title: "Kerusakan Trotoar ITB Ganesha",
-    date: "3 Oktober 2025",
-    location: "Jl. Ganesa No.10, Lb. Siliwangi...",
-    status: "Dikonfirmasi",
-    statusColor: "#2196F3",
-    statusBgColor: "#2196F320",
-  },
-];
+interface ReportHistoryItem {
+  id: number;
+  title: string;
+  date: string;
+  location: string;
+  status: string;
+  statusColor: string;
+  statusBgColor: string;
+}
+
+// const reportHistory = [
+//   {
+//     id: 1,
+//     title: "Kerusakan Trotoar ITB Ganesha",
+//     date: "3 Oktober 2025",
+//     location: "Jl. Ganesa No.10, Lb. Siliwangi...",
+//     status: "Diperiksa",
+//     statusColor: "#717680",
+//     statusBgColor: "#F5F5F6",
+//   },
+//   {
+//     id: 2,
+//     title: "Kerusakan Trotoar ITB Ganesha",
+//     date: "3 Oktober 2025",
+//     location: "Jl. Ganesa No.10, Lb. Siliwangi...",
+//     status: "Dikonfirmasi",
+//     statusColor: "#2196F3",
+//     statusBgColor: "#2196F320",
+//   },
+// ];
+
+const reportHistory: ReportHistoryItem[] = [];
 
 const rankings = [
   {
     id: 1,
     rank: 1,
-    name: "WangXiaoXia",
-    avatar: "https://i.pravatar.cc/150?img=12",
+    name: 'WangXiaoXia',
+    avatar: 'https://i.pravatar.cc/150?img=12',
     points: 150,
     isCurrentUser: false,
   },
   {
     id: 2,
     rank: 2,
-    name: "Lee Beu-li",
-    avatar: "https://i.pravatar.cc/150?img=18",
+    name: 'Lee Beu-li',
+    avatar: 'https://i.pravatar.cc/150?img=18',
     points: 150,
     isCurrentUser: false,
   },
   {
     id: 3,
     rank: 24,
-    name: "You",
-    avatar: "https://i.pravatar.cc/150?img=47",
+    name: 'You',
+    avatar: 'https://i.pravatar.cc/150?img=47',
     points: 150,
     isCurrentUser: true,
   },
@@ -70,125 +76,157 @@ export default function Home() {
 
   const handleCreateReport = () => {
     // Handle create report navigation
-    console.log("Navigate to create report");
+    console.log('Navigate to create report');
   };
 
   const handleViewAllReports = () => {
     // Handle view all reports navigation
-    console.log("Navigate to all reports");
+    console.log('Navigate to all reports');
   };
 
   const handleViewReportDetail = (reportId: number) => {
     // Handle view report detail navigation
-    console.log("Navigate to report detail:", reportId);
+    console.log('Navigate to report detail:', reportId);
   };
 
   const handleViewAllRankings = () => {
     // Handle view all rankings navigation
-    console.log("Navigate to all rankings");
+    console.log('Navigate to all rankings');
+  };
+
+  const handleNavigateToProfile = () => {
+    router.push('/(secure)/profil');
   };
 
   return (
-    <View style={styles.wrapper}>
+    <View className="relative flex-1 bg-[#FAFAFB]">
       <Image
-        source={require("../../../assets/berandaBG.png")}
-        style={styles.topImage}
+        source={require('../../../assets/berandaBG.png')}
+        className="absolute left-0 right-0 top-0 z-10 h-[158px]"
         resizeMode="cover"
       />
 
-      <ScrollView style={styles.container}>
-        <View style={styles.contentContainer}>
-          <View style={styles.header}>
+      <ScrollView className="z-20 flex-1 bg-transparent">
+        <View className="mt-[35px] min-h-full rounded-t-[20px] bg-transparent p-4">
+          {/* Header */}
+          <View className="my-2 flex-row items-center justify-between">
             <View>
-              <Text style={styles.greeting}>
-                Halo, <Text style={styles.name}>{userData.name}</Text>!👋
+              <Text className="text-xl font-medium text-white">
+                Halo, <Text className="font-semibold text-[#00D996]">{userData.name}</Text>
+                !👋
               </Text>
             </View>
-            <Avatar.Image size={40} source={{ uri: userData.avatar }} />
+            <TouchableOpacity onPress={handleNavigateToProfile}>
+              <Avatar.Image size={40} source={{ uri: userData.avatar }} />
+            </TouchableOpacity>
           </View>
 
-          <Card style={styles.pointsCard}>
-            <Card.Content style={styles.pointsContent}>
+          {/* Points Card */}
+          <Card className="mt-2.5 rounded-2xl">
+            <Card.Content className="flex-row items-center justify-between rounded-2xl bg-white">
               <View>
-                <Text style={styles.pointsLabel}>Poin Jejak</Text>
-                <View style={styles.pointsRow}>
-                  <Ionicons
-                    name="footsteps-outline"
-                    size={20}
-                    color="#00D996"
-                  />
-                  <Text style={styles.pointsValue}>{userData.points} poin</Text>
+                <Text className="text-[10px] text-[#242528]">Poin Jejak</Text>
+                <View className="mt-1 flex-row items-center">
+                  <Ionicons name="footsteps-outline" size={20} color="#00D996" />
+                  <Text className="ml-1.5 text-lg font-bold text-[#242528]">
+                    {userData.points} poin
+                  </Text>
                 </View>
               </View>
               <TouchableOpacity
-                style={styles.reportButton}
-                onPress={handleCreateReport}
-              >
-                <Text style={styles.reportButtonText}>Buat Laporan</Text>
+                className="items-center justify-center rounded-[25px] bg-[#EBF4FF] px-4 py-2.5"
+                onPress={handleCreateReport}>
+                <Text className="text-sm font-semibold text-[#2431AE]">Buat Laporan</Text>
               </TouchableOpacity>
             </Card.Content>
           </Card>
 
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Riwayat Laporanmu</Text>
+          {/* Report History Section */}
+          <View className="mt-5 flex-row items-center justify-between">
+            <Text className="text-base font-semibold text-[#242528]">Riwayat Laporanmu</Text>
             <TouchableOpacity onPress={handleViewAllReports}>
-              <Text style={styles.linkText}>Lihat semua</Text>
+              <Text className="text-[#3848F4]">Lihat semua</Text>
             </TouchableOpacity>
           </View>
 
-          {reportHistory.map((report) => (
-            <Card key={report.id} style={styles.reportCard}>
-              <Card.Content>
-                <Text style={styles.reportTitle}>{report.title}</Text>
-                <Text style={styles.reportDate}>
-                  {report.date} • {report.location}
-                </Text>
-                <View style={styles.separator} />
-                <View style={styles.statusRow}>
-                  <View
-                    style={[
-                      styles.statusBadge,
-                      { backgroundColor: report.statusBgColor },
-                    ]}
-                  >
-                    <Text
-                      style={[styles.statusText, { color: report.statusColor }]}
-                    >
-                      {report.status}
-                    </Text>
+          {/* Report Cards */}
+          {reportHistory.length > 0 ? (
+            reportHistory.map((report) => (
+              <Card key={report.id} className="mt-2.5 rounded-xl bg-white">
+                <Card.Content>
+                  <Text className="text-[15px] font-semibold">{report.title}</Text>
+                  <Text className="my-1 text-[#777]">
+                    {report.date} • {report.location}
+                  </Text>
+                  <View className="my-3 h-[1px] bg-[#E5E5E5]" />
+                  <View className="flex-row items-center justify-between">
+                    <View
+                      className="rounded-[25px] px-2.5 py-1"
+                      style={{ backgroundColor: report.statusBgColor }}>
+                      <Text className="font-semibold" style={{ color: report.statusColor }}>
+                        {report.status}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      className="items-center justify-center rounded-lg bg-[#1437B9] px-3 py-2"
+                      onPress={() => handleViewReportDetail(report.id)}>
+                      <Text className="text-xs font-medium text-[#F5F5F6]">Lihat detail</Text>
+                    </TouchableOpacity>
                   </View>
-                  <TouchableOpacity
-                    style={styles.detailButton}
-                    onPress={() => handleViewReportDetail(report.id)}
-                  >
-                    <Text style={styles.detailButtonText}>Lihat detail</Text>
-                  </TouchableOpacity>
-                </View>
-              </Card.Content>
-            </Card>
-          ))}
+                </Card.Content>
+              </Card>
+            ))
+          ) : (
+            <View className="mt-2.5 py-14">
+              <View className="items-center justify-center gap-2 px-10">
+                <Image
+                  source={require('../../../assets/empty.png')}
+                  style={{ width: 60, height: 60 }}
+                />
+                <Text className="mt-2 text-center font-inter-semi-bold text-sm text-black">
+                  Belum ada laporan
+                </Text>
+                <Text className="mt-1 text-center font-inter-regular text-xs text-black">
+                  Kamu belum pernah membuat laporan. Yuk, mulai laporkan kerusakan pertama kamu!
+                </Text>
+                <Pressable
+                  className="mt-4 items-center justify-center rounded-3xl border border-gray-300 bg-[#F5F5F6] px-4 py-2.5"
+                  onPress={handleCreateReport}>
+                  <Text className="text-sm font-semibold text-gray-700">Laporkan Kerusakan</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
 
-          <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Peringkat</Text>
+          {/* Ranking Section */}
+          <View className="mt-5 flex-row items-center justify-between">
+            <Text className="text-base font-semibold text-[#242528]">Peringkat</Text>
             <TouchableOpacity onPress={handleViewAllRankings}>
-              <Text style={styles.linkText}>Lihat semua</Text>
+              <Text className="text-[#3848F4]">Lihat semua</Text>
             </TouchableOpacity>
           </View>
 
+          {/* Ranking Cards */}
           {rankings.map((user) => (
             <View
               key={user.id}
-              style={[styles.rankCard, user.isCurrentUser && styles.youCard]}
-            >
-              <View style={styles.rankRow}>
-                <Text style={styles.rankNumber}>{user.rank}</Text>
+              className={`mt-2 rounded-xl border p-3 ${
+                user.isCurrentUser
+                  ? 'border-[#9DBDFF] bg-[#DCEAFF]'
+                  : 'border-[#E5E6E8] bg-[#F5F5F6]'
+              }`}>
+              <View className="flex-row items-center gap-2.5">
+                <Text className="w-[25px] text-center text-base font-semibold text-[#2431AE]">
+                  {user.rank}
+                </Text>
                 <Avatar.Image size={35} source={{ uri: user.avatar }} />
                 <Text
-                  style={user.isCurrentUser ? styles.myName : styles.rankName}
-                >
+                  className={`flex-1 text-[15px] font-medium ${
+                    user.isCurrentUser ? 'text-[#2431AE]' : 'text-black'
+                  }`}>
                   {user.name}
                 </Text>
-                <Text style={styles.rankPoints}>{user.points} Poin Jejak</Text>
+                <Text className="text-[13px] text-[#2431AE]">{user.points} Poin Jejak</Text>
               </View>
             </View>
           ))}
@@ -197,185 +235,3 @@ export default function Home() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    position: "relative",
-    backgroundColor: "#FAFAFB",
-  },
-  topImage: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    height: 158,
-    zIndex: 1,
-  },
-  container: {
-    backgroundColor: "transparent",
-    flex: 1,
-    zIndex: 2,
-  },
-  contentContainer: {
-    backgroundColor: "transparent",
-    marginTop: 35,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 16,
-    minHeight: "100%",
-  },
-  header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginVertical: 8,
-  },
-  greeting: {
-    fontSize: 20,
-    fontWeight: "500",
-    color: "#FFF",
-  },
-  name: {
-    color: "#00D996",
-    fontWeight: "600",
-  },
-  pointsCard: {
-    marginTop: 10,
-    borderRadius: 16,
-  },
-  pointsContent: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    backgroundColor: "#FFFFFF",
-    borderRadius: 16,
-  },
-  pointsLabel: {
-    color: "#242528",
-    fontSize: 10,
-  },
-  pointsRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginTop: 4,
-  },
-  pointsValue: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#242528",
-    marginLeft: 6,
-  },
-  reportButton: {
-    backgroundColor: "#EBF4FF",
-    borderRadius: 25,
-    paddingVertical: 10,
-    paddingHorizontal: 16,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  reportButtonText: {
-    color: "#2431AE",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  sectionHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 20,
-  },
-  sectionTitle: {
-    fontSize: 16,
-    color: "#242528",
-    fontWeight: "600",
-  },
-  linkText: {
-    color: "#3848F4",
-  },
-  reportCard: {
-    marginTop: 10,
-    borderRadius: 12,
-    backgroundColor: "#FFFFFF",
-  },
-  reportTitle: {
-    fontSize: 15,
-    fontWeight: "600",
-  },
-  reportDate: {
-    color: "#777",
-    marginVertical: 4,
-  },
-  separator: {
-    height: 1,
-    backgroundColor: "#E5E5E5",
-    marginVertical: 12,
-  },
-  statusRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  statusBadge: {
-    paddingVertical: 4,
-    paddingHorizontal: 10,
-    borderRadius: 25,
-  },
-  statusText: {
-    fontWeight: "600",
-    color: "#717680",
-  },
-  detailButton: {
-    backgroundColor: "#1437B9",
-    borderRadius: 8,
-    paddingVertical: 8,
-    paddingHorizontal: 12,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  detailButtonText: {
-    color: "#F5F5F6",
-    fontSize: 12,
-    fontWeight: "500",
-  },
-  rankCard: {
-    backgroundColor: "#F5F5F6",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "#E5E6E8",
-    padding: 12,
-    marginTop: 8,
-  },
-  rankRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 10,
-  },
-  rankNumber: {
-    fontSize: 16,
-    fontWeight: "600",
-    width: 25,
-    textAlign: "center",
-    color: "#2431AE",
-  },
-  rankName: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "500",
-  },
-  myName: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: "500",
-    color: "#2431AE",
-  },
-  rankPoints: {
-    color: "#2431AE",
-    fontSize: 13,
-  },
-  youCard: {
-    backgroundColor: "#DCEAFF",
-    borderWidth: 1,
-    borderColor: "#9DBDFF",
-  },
-});
