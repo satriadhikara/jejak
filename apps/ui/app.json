@@ -34,7 +34,9 @@
           "backgroundColor": "#161B50",
           "image": "./assets/splash.png"
         }
-      ]
+      ],
+      "expo-secure-store",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true,

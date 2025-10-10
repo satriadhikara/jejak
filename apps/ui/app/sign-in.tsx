@@ -1,9 +1,12 @@
-import { View, Text, Pressable } from 'react-native';
+import { View, Text, Pressable, ToastAndroid } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from '@expo/vector-icons/Feather';
 import { useRef, useMemo } from 'react';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { signIn as signInBetterAuth } from '@/lib/auth-client';
+import { Image } from 'expo-image';
+import { router } from 'expo-router';
 
 export default function SignIn() {
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -11,6 +14,23 @@ export default function SignIn() {
 
   const handleOpenModal = () => {
     bottomSheetRef.current?.expand();
+  };
+
+  const handleSignInWithGoogle = async () => {
+    await signInBetterAuth.social(
+      {
+        provider: 'google',
+        callbackURL: '/',
+      },
+      {
+        onError: (error) => {
+          if (error.error.status === 404) {
+            ToastAndroid.show('Cant connect to backend', ToastAndroid.SHORT);
+          }
+        },
+      }
+    );
+    router.replace('/');
   };
 
   return (
@@ -47,36 +67,30 @@ export default function SignIn() {
               <Text className="font-inter-bold text-2xl text-primary">Selamat datang!</Text>
             </View>
 
-            <View className="gap-3">
-              <Pressable className="flex-row items-center justify-center gap-3 rounded-2xl border border-gray-300 bg-white px-6 py-4">
-                <Feather name="mail" size={20} color="#2431AE" />
-                <Text className="font-inter-medium text-base text-primary">
-                  Lanjutkan dengan Email
-                </Text>
-              </Pressable>
-
-              <Pressable className="flex-row items-center justify-center gap-3 rounded-2xl border border-gray-300 bg-white px-6 py-4">
-                <Feather name="smartphone" size={20} color="#2431AE" />
-                <Text className="font-inter-medium text-base text-primary">
-                  Lanjutkan dengan Nomor Telepon
-                </Text>
-              </Pressable>
-
-              <View className="my-4 flex-row items-center gap-4">
-                <View className="h-[1px] flex-1 bg-gray-300" />
-                <Text className="font-inter-regular text-gray-500">atau masuk dengan</Text>
-                <View className="h-[1px] flex-1 bg-gray-300" />
+            <View>
+              <View className="mb-6 flex-row items-center gap-4">
+                <View className="h-[1px] flex-1 bg-[#ABAFB5]" />
+                <Text className="font-inter-regular text-[#ABAFB5]">atau masuk dengan</Text>
+                <View className="h-[1px] flex-1 bg-[#ABAFB5]" />
               </View>
 
               <View className="flex flex-row items-center justify-center gap-3">
-                <Pressable className="w-1/2 flex-row items-center justify-center gap-3 rounded-2xl border border-gray-300 bg-white px-6 py-4">
-                  <Feather name="chrome" size={20} color="#2431AE" />
-                  <Text className="font-inter-medium text-base text-primary">Google</Text>
+                <Pressable
+                  className="w-1/2 flex-row items-center justify-center gap-2 rounded-2xl border border-[#ABAFB5] bg-white px-6 py-4"
+                  onPress={handleSignInWithGoogle}>
+                  <Image
+                    source={require('@/assets/icons/google.svg')}
+                    style={{ width: 19, height: 19 }}
+                  />
+                  <Text className="font-inter-semi-bold text-[#4B4D53]">Google</Text>
                 </Pressable>
 
-                <Pressable className="w-1/2 flex-row items-center justify-center gap-3 rounded-2xl border border-gray-300 bg-white px-6 py-4">
-                  <Feather name="github" size={20} color="#2431AE" />
-                  <Text className="font-inter-medium text-base text-primary">Apple</Text>
+                <Pressable className="w-1/2 flex-row items-center justify-center gap-3 rounded-2xl border border-[#ABAFB5] bg-white px-6 py-4">
+                  <Image
+                    source={require('@/assets/icons/apple.svg')}
+                    style={{ width: 19, height: 19 }}
+                  />
+                  <Text className="font-inter-semi-bold text-base text-[#4B4D53]">Apple ID</Text>
                 </Pressable>
               </View>
             </View>

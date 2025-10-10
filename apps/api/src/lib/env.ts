@@ -4,8 +4,10 @@ const envSchema = z.object({
   DATABASE_URL: z.url(),
   BETTER_AUTH_SECRET: z.string().min(1),
   BETTER_AUTH_URL: z.url(),
-  CLIENT_ORIGIN: z.url(),
+  CLIENT_ORIGIN: z.string().min(1),
   PORT: z.string().optional(),
+  GOOGLE_CLIENT_ID: z.string().min(1),
+  GOOGLE_CLIENT_SECRET: z.string().min(1),
 });
 
 const parsedEnv = envSchema.safeParse(Bun.env);
