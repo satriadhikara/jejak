@@ -16,7 +16,7 @@
     "apps/api": {
       "name": "api",
       "dependencies": {
-        "@better-auth/expo": "^1.3.26",
+        "@better-auth/expo": "^1.3.27",
         "@hono/zod-validator": "^0.7.3",
         "drizzle-orm": "^0.44.6",
         "hono": "^4.9.9",
@@ -269,7 +269,7 @@
 
     "@better-auth/core": ["@better-auth/core@1.3.27", "", { "dependencies": { "better-call": "1.0.19", "zod": "^4.1.5" } }, "sha512-3Sfdax6MQyronY+znx7bOsfQHI6m1SThvJWb0RDscFEAhfqLy95k1sl+/PgGyg0cwc2cUXoEiAOSqYdFYrg3vA=="],
 
-    "@better-auth/expo": ["@better-auth/expo@1.3.26", "", { "dependencies": { "@better-fetch/fetch": "^1.1.18", "zod": "^4.1.5" }, "peerDependencies": { "better-auth": "1.3.26", "expo-constants": ">=17.0.0", "expo-crypto": ">=13.0.0", "expo-linking": ">=7.0.0", "expo-secure-store": ">=14.0.0", "expo-web-browser": ">=14.0.0" } }, "sha512-yK0j4GUB3f8++1NPxaK7iIUd+q/jsWFpORwJvz6pIv36Z2Yz8q0Q1mgHoLv37ZhWEJTMNhRJUHm11x8Xp7mQXw=="],
+    "@better-auth/expo": ["@better-auth/expo@1.3.27", "", { "dependencies": { "@better-fetch/fetch": "1.1.18", "zod": "^4.1.5" }, "peerDependencies": { "better-auth": "1.3.27", "expo-constants": ">=17.0.0", "expo-crypto": ">=13.0.0", "expo-linking": ">=7.0.0", "expo-secure-store": ">=14.0.0", "expo-web-browser": ">=14.0.0" } }, "sha512-2bZ4Fi7Moa99ymjkIwRUzENbqmzZNjD9cjlq2lpuiF/+TGOA2LYJmS7RnR/i9+UHKi5T3AsXgrIRMFQgYtgZ2Q=="],
 
     "@better-auth/utils": ["@better-auth/utils@0.3.0", "", {}, "sha512-W+Adw6ZA6mgvnSnhOki270rwJ42t4XzSK6YWGF//BbVXL6SwCLWfyzBc1lN2m/4RM28KubdBKQ4X5VMoLRNPQw=="],
 
@@ -2266,8 +2266,6 @@
     "tsconfig-paths/json5": ["json5@1.0.2", "", { "dependencies": { "minimist": "^1.2.0" }, "bin": { "json5": "lib/cli.js" } }, "sha512-g1MWMLBiz8FKi1e4w0UyVL3w+iJceWAFBAaBnnGKOpNa5f8TLktkbre1+s6oICydWAm+HRUGTmI+//xv2hvXYA=="],
 
     "tsyringe/tslib": ["tslib@1.14.1", "", {}, "sha512-Xni35NKzjgMrwevysHTCArtLDpPvye8zV/0E4EyYn43P7/7qvQwPh9BGkHewbMulVntbigmcT7rdX3BNo9wRJg=="],
-
-    "ui/@better-auth/expo": ["@better-auth/expo@1.3.27", "", { "dependencies": { "@better-fetch/fetch": "1.1.18", "zod": "^4.1.5" }, "peerDependencies": { "better-auth": "1.3.27", "expo-constants": ">=17.0.0", "expo-crypto": ">=13.0.0", "expo-linking": ">=7.0.0", "expo-secure-store": ">=14.0.0", "expo-web-browser": ">=14.0.0" } }, "sha512-2bZ4Fi7Moa99ymjkIwRUzENbqmzZNjD9cjlq2lpuiF/+TGOA2LYJmS7RnR/i9+UHKi5T3AsXgrIRMFQgYtgZ2Q=="],
 
     "whatwg-url/webidl-conversions": ["webidl-conversions@3.0.1", "", {}, "sha512-2JAn3z8AR6rjK8Sm8orRC0h/bcl/DqL7tRPdGZ4I1CjdF+EaMLmYxBHyXuKL849eucPFhvBoxMsflfOb8kxaeQ=="],
 
