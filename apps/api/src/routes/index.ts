@@ -1,13 +1,12 @@
-import { Hono } from "hono";
-
 import { createHealthRouter } from "@/routes/health.route";
 import authRoutes from "@/routes/auth.route";
 import { createPointsRouter } from "@/routes/points.route";
+import { createRouter } from "@/lib/create-router";
 
 type RoutesDependencies = {
-  healthRouter?: Hono;
-  authRouter?: Hono;
-  pointsRouter?: Hono;
+  healthRouter?: ReturnType<typeof createRouter>;
+  authRouter?: ReturnType<typeof createRouter>;
+  pointsRouter?: ReturnType<typeof createRouter>;
 };
 
 export const createRoutes = ({
@@ -15,7 +14,7 @@ export const createRoutes = ({
   authRouter = authRoutes,
   pointsRouter = createPointsRouter(),
 }: RoutesDependencies = {}) => {
-  const routes = new Hono();
+  const routes = createRouter();
 
   routes.route("/health", healthRouter);
   routes.route("/auth", authRouter);
