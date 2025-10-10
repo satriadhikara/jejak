@@ -1,15 +1,61 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
-  // Make sure Tailwind scans all screens/components that use className
-  content: [
-    "./app/**/*.{js,jsx,ts,tsx}",
-    "./components/**/*.{js,jsx,ts,tsx}",
-    "./App.{js,jsx,ts,tsx}",
-  ],
-  presets: [require("nativewind/preset")],
+  content: ['./app/**/*.{js,ts,tsx}', './components/**/*.{js,ts,tsx}'],
+
+  presets: [require('nativewind/preset')],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: {
+          25: '#F6FBFF',
+          50: '#EBF4FF',
+          100: '#DCEAFF',
+          200: '#DCDCDC',
+          300: '#BDBDBD',
+          400: '#989898',
+          500: '#7C7C7C',
+          600: '#656565',
+          700: '#525252',
+          800: '#2431AE',
+          900: '#3D3D3D',
+          950: '#292929',
+          DEFAULT: '#2431AE',
+        },
+        secondary: {
+          25: '#FAFAFA',
+          50: '#F5F5F5',
+          100: '#EFEFEF',
+          200: '#DCDCDC',
+          300: '#BDBDBD',
+          400: '#989898',
+          500: '#00D996',
+          600: '#656565',
+          700: '#525252',
+          800: '#464646',
+          900: '#3D3D3D',
+          950: '#292929',
+          DEFAULT: '#00D996',
+        },
+        background: '#FFFFFF',
+        surface: '#F5F5F5',
+        error: '#FF3B30',
+        success: '#34C759',
+        warning: '#FF9500',
+      },
+      fontFamily: {
+        sans: ['Inter_28pt-Regular'],
+        'sans-serif': ['Inter_28pt-Regular'],
+        'inter-thin': ['Inter_28pt-Thin'],
+        'inter-extra-light': ['Inter_28pt-ExtraLight'],
+        'inter-light': ['Inter_28pt-Light'],
+        'inter-regular': ['Inter_28pt-Regular'],
+        'inter-medium': ['Inter_28pt-Medium'],
+        'inter-semi-bold': ['Inter_28pt-SemiBold'],
+        'inter-bold': ['Inter_28pt-Bold'],
+        'inter-extra-bold': ['Inter_28pt-ExtraBold'],
+        'inter-black': ['Inter_28pt-Black'],
+      },
+    },
   },
   plugins: [],
-  nativewind: { rem: 16 },
-}
+};
