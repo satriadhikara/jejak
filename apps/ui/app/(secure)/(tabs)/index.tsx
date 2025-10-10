@@ -1,9 +1,18 @@
-import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, Pressable } from 'react-native';
-import { Avatar, Card } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
-import { useSessionContext } from '@/lib/session-context';
-import { router } from 'expo-router';
+import React from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Pressable,
+} from "react-native";
+import { Avatar, Card } from "react-native-paper";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuthContext } from "@/lib/auth-context";
+import { router } from "expo-router";
+import { useQuery } from "@tanstack/react-query";
+import { ToastAndroid } from "react-native";
 
 interface ReportHistoryItem {
   id: number;
@@ -42,66 +51,87 @@ const rankings = [
   {
     id: 1,
     rank: 1,
-    name: 'WangXiaoXia',
-    avatar: 'https://i.pravatar.cc/150?img=12',
+    name: "WangXiaoXia",
+    avatar: "https://i.pravatar.cc/150?img=12",
     points: 150,
     isCurrentUser: false,
   },
   {
     id: 2,
     rank: 2,
-    name: 'Lee Beu-li',
-    avatar: 'https://i.pravatar.cc/150?img=18',
+    name: "Lee Beu-li",
+    avatar: "https://i.pravatar.cc/150?img=18",
     points: 150,
     isCurrentUser: false,
   },
   {
     id: 3,
     rank: 24,
-    name: 'You',
-    avatar: 'https://i.pravatar.cc/150?img=47',
+    name: "You",
+    avatar: "https://i.pravatar.cc/150?img=47",
     points: 150,
     isCurrentUser: true,
   },
 ];
 
+const getUserPoints = async (cookies: string) => {
+  const response = await fetch(
+    `${process.env.EXPO_PUBLIC_API_URL}/api/points/user`,
+    {
+      headers: {
+        Cookie: cookies,
+      },
+    },
+  );
+  const data = await response.json();
+  return data;
+};
+
 export default function Home() {
-  const session = useSessionContext();
+  const { session, cookies } = useAuthContext();
+  const userPoints = useQuery({
+    queryKey: ["userPoints"],
+    queryFn: () => getUserPoints(cookies),
+  });
+
+  if (userPoints.isError) {
+    ToastAndroid.show("Error: " + userPoints.error.name, ToastAndroid.SHORT);
+  }
 
   const userData = {
     name: session.user.name,
     avatar: session.user.image,
-    points: 150, // This should come from your backend/database
+    points: userPoints.data?.points ?? 0,
   };
 
   const handleCreateReport = () => {
     // Handle create report navigation
-    console.log('Navigate to create report');
+    console.log("Navigate to create report");
   };
 
   const handleViewAllReports = () => {
     // Handle view all reports navigation
-    console.log('Navigate to all reports');
+    console.log("Navigate to all reports");
   };
 
   const handleViewReportDetail = (reportId: number) => {
     // Handle view report detail navigation
-    console.log('Navigate to report detail:', reportId);
+    console.log("Navigate to report detail:", reportId);
   };
 
   const handleViewAllRankings = () => {
     // Handle view all rankings navigation
-    console.log('Navigate to all rankings');
+    console.log("Navigate to all rankings");
   };
 
   const handleNavigateToProfile = () => {
-    router.push('/(secure)/profil');
+    router.push("/(secure)/profil");
   };
 
   return (
     <View className="relative flex-1 bg-[#FAFAFB]">
       <Image
-        source={require('../../../assets/berandaBG.png')}
+        source={require("../../../assets/berandaBG.png")}
         className="absolute left-0 right-0 top-0 z-10 h-[158px]"
         resizeMode="cover"
       />
@@ -112,7 +142,10 @@ export default function Home() {
           <View className="my-2 flex-row items-center justify-between">
             <View>
               <Text className="text-xl font-medium text-white">
-                Halo, <Text className="font-semibold text-[#00D996]">{userData.name}</Text>
+                Halo,{" "}
+                <Text className="font-semibold text-[#00D996]">
+                  {userData.name}
+                </Text>
                 !👋
               </Text>
             </View>
@@ -127,7 +160,11 @@ export default function Home() {
               <View>
                 <Text className="text-[10px] text-[#242528]">Poin Jejak</Text>
                 <View className="mt-1 flex-row items-center">
-                  <Ionicons name="footsteps-outline" size={20} color="#00D996" />
+                  <Ionicons
+                    name="footsteps-outline"
+                    size={20}
+                    color="#00D996"
+                  />
                   <Text className="ml-1.5 text-lg font-bold text-[#242528]">
                     {userData.points} poin
                   </Text>
@@ -135,15 +172,20 @@ export default function Home() {
               </View>
               <TouchableOpacity
                 className="items-center justify-center rounded-[25px] bg-[#EBF4FF] px-4 py-2.5"
-                onPress={handleCreateReport}>
-                <Text className="text-sm font-semibold text-[#2431AE]">Buat Laporan</Text>
+                onPress={handleCreateReport}
+              >
+                <Text className="text-sm font-semibold text-[#2431AE]">
+                  Buat Laporan
+                </Text>
               </TouchableOpacity>
             </Card.Content>
           </Card>
 
           {/* Report History Section */}
           <View className="mt-5 flex-row items-center justify-between">
-            <Text className="text-base font-semibold text-[#242528]">Riwayat Laporanmu</Text>
+            <Text className="text-base font-semibold text-[#242528]">
+              Riwayat Laporanmu
+            </Text>
             <TouchableOpacity onPress={handleViewAllReports}>
               <Text className="text-[#3848F4]">Lihat semua</Text>
             </TouchableOpacity>
@@ -154,7 +196,9 @@ export default function Home() {
             reportHistory.map((report) => (
               <Card key={report.id} className="mt-2.5 rounded-xl bg-white">
                 <Card.Content>
-                  <Text className="text-[15px] font-semibold">{report.title}</Text>
+                  <Text className="text-[15px] font-semibold">
+                    {report.title}
+                  </Text>
                   <Text className="my-1 text-[#777]">
                     {report.date} • {report.location}
                   </Text>
@@ -162,15 +206,22 @@ export default function Home() {
                   <View className="flex-row items-center justify-between">
                     <View
                       className="rounded-[25px] px-2.5 py-1"
-                      style={{ backgroundColor: report.statusBgColor }}>
-                      <Text className="font-semibold" style={{ color: report.statusColor }}>
+                      style={{ backgroundColor: report.statusBgColor }}
+                    >
+                      <Text
+                        className="font-semibold"
+                        style={{ color: report.statusColor }}
+                      >
                         {report.status}
                       </Text>
                     </View>
                     <TouchableOpacity
                       className="items-center justify-center rounded-lg bg-[#1437B9] px-3 py-2"
-                      onPress={() => handleViewReportDetail(report.id)}>
-                      <Text className="text-xs font-medium text-[#F5F5F6]">Lihat detail</Text>
+                      onPress={() => handleViewReportDetail(report.id)}
+                    >
+                      <Text className="text-xs font-medium text-[#F5F5F6]">
+                        Lihat detail
+                      </Text>
                     </TouchableOpacity>
                   </View>
                 </Card.Content>
@@ -180,19 +231,23 @@ export default function Home() {
             <View className="mt-2.5 py-14">
               <View className="items-center justify-center gap-2 px-10">
                 <Image
-                  source={require('../../../assets/empty.png')}
+                  source={require("../../../assets/empty.png")}
                   style={{ width: 60, height: 60 }}
                 />
                 <Text className="mt-2 text-center font-inter-semi-bold text-sm text-black">
                   Belum ada laporan
                 </Text>
                 <Text className="mt-1 text-center font-inter-regular text-xs text-black">
-                  Kamu belum pernah membuat laporan. Yuk, mulai laporkan kerusakan pertama kamu!
+                  Kamu belum pernah membuat laporan. Yuk, mulai laporkan
+                  kerusakan pertama kamu!
                 </Text>
                 <Pressable
                   className="mt-4 items-center justify-center rounded-3xl border border-gray-300 bg-[#F5F5F6] px-4 py-2.5"
-                  onPress={handleCreateReport}>
-                  <Text className="text-sm font-semibold text-gray-700">Laporkan Kerusakan</Text>
+                  onPress={handleCreateReport}
+                >
+                  <Text className="text-sm font-semibold text-gray-700">
+                    Laporkan Kerusakan
+                  </Text>
                 </Pressable>
               </View>
             </View>
@@ -200,7 +255,9 @@ export default function Home() {
 
           {/* Ranking Section */}
           <View className="mt-5 flex-row items-center justify-between">
-            <Text className="text-base font-semibold text-[#242528]">Peringkat</Text>
+            <Text className="text-base font-semibold text-[#242528]">
+              Peringkat
+            </Text>
             <TouchableOpacity onPress={handleViewAllRankings}>
               <Text className="text-[#3848F4]">Lihat semua</Text>
             </TouchableOpacity>
@@ -212,9 +269,10 @@ export default function Home() {
               key={user.id}
               className={`mt-2 rounded-xl border p-3 ${
                 user.isCurrentUser
-                  ? 'border-[#9DBDFF] bg-[#DCEAFF]'
-                  : 'border-[#E5E6E8] bg-[#F5F5F6]'
-              }`}>
+                  ? "border-[#9DBDFF] bg-[#DCEAFF]"
+                  : "border-[#E5E6E8] bg-[#F5F5F6]"
+              }`}
+            >
               <View className="flex-row items-center gap-2.5">
                 <Text className="w-[25px] text-center text-base font-semibold text-[#2431AE]">
                   {user.rank}
@@ -222,11 +280,14 @@ export default function Home() {
                 <Avatar.Image size={35} source={{ uri: user.avatar }} />
                 <Text
                   className={`flex-1 text-[15px] font-medium ${
-                    user.isCurrentUser ? 'text-[#2431AE]' : 'text-black'
-                  }`}>
+                    user.isCurrentUser ? "text-[#2431AE]" : "text-black"
+                  }`}
+                >
                   {user.name}
                 </Text>
-                <Text className="text-[13px] text-[#2431AE]">{user.points} Poin Jejak</Text>
+                <Text className="text-[13px] text-[#2431AE]">
+                  {user.points} Poin Jejak
+                </Text>
               </View>
             </View>
           ))}

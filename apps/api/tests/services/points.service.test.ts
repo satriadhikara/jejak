@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, mock } from "bun:test";
 
-import { createLeaderboardService } from "@/services/leaderboard.service";
+import { createPointsService } from "@/services/points.service";
 
-describe("leaderboard service", () => {
+describe("points service", () => {
   let select: ReturnType<typeof mock>;
   let from: ReturnType<typeof mock>;
   let orderBy: ReturnType<typeof mock>;
   let limit: ReturnType<typeof mock>;
 
   const getService = () =>
-    createLeaderboardService({
+    createPointsService({
       db: {
         select,
-      } as unknown as Parameters<typeof createLeaderboardService>[0]["db"],
+      } as unknown as Parameters<typeof createPointsService>[0]["db"],
     });
 
   const rows = [

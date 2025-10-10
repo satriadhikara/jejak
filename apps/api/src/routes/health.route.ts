@@ -1,6 +1,5 @@
-import { Hono } from "hono";
-
 import { getHealthStatus } from "@/services/health.service";
+import { createRouter } from "@/lib/create-router";
 
 type HealthRouteDependencies = {
   getHealthStatus: typeof getHealthStatus;
@@ -13,7 +12,7 @@ const defaultDependencies: HealthRouteDependencies = {
 export const createHealthRouter = (
   deps: HealthRouteDependencies = defaultDependencies,
 ) => {
-  const router = new Hono();
+  const router = createRouter();
 
   router.get("/", async (c) => {
     const status = await deps.getHealthStatus();

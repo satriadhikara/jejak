@@ -1,6 +1,10 @@
 import db from "@/db";
 import { user } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
+
+export type UserPoints = {
+  points: number;
+};
 
 export type LeaderboardEntry = {
   id: string;
@@ -9,15 +13,21 @@ export type LeaderboardEntry = {
   points: number;
 };
 
-type LeaderboardServiceDependencies = {
+type PointsServiceDependencies = {
   db: typeof db;
 };
 
-export type LeaderboardService = ReturnType<typeof createLeaderboardService>;
+export type PointsService = ReturnType<typeof createPointsService>;
 
-export const createLeaderboardService = ({
-  db,
-}: LeaderboardServiceDependencies) => {
+export const createPointsService = ({ db }: PointsServiceDependencies) => {
+  const getUserPoints = async (userId: string): Promise<UserPoints> => {
+    const [row] = await db
+      .select({ points: user.points })
+      .from(user)
+      .where(eq(user.id, userId));
+    return { points: row.points ?? 0 };
+  };
+
   const getTopUsersByPoints = async (
     limit = 10,
   ): Promise<LeaderboardEntry[]> => {
@@ -40,13 +50,18 @@ export const createLeaderboardService = ({
 
   return {
     getTopUsersByPoints,
+    getUserPoints,
   };
 };
 
-const leaderboardService = createLeaderboardService({ db });
+const pointsService = createPointsService({ db });
 
 export async function getTopUsersByPoints(
   limit = 10,
 ): Promise<LeaderboardEntry[]> {
-  return leaderboardService.getTopUsersByPoints(limit);
+  return pointsService.getTopUsersByPoints(limit);
+}
+
+export async function getUserPoints(userId: string): Promise<UserPoints> {
+  return pointsService.getUserPoints(userId);
 }
