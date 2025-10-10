@@ -1,6 +1,9 @@
 import { Hono } from "hono";
 
-import { leaderboardTopQueryValidator } from "@/validators/leaderboard.validator";
+import {
+  leaderboardTopQueryValidator,
+  type LeaderboardTopQuery,
+} from "@/validators/leaderboard.validator";
 import { getTopUsersByPoints } from "@/services/leaderboard.service";
 
 type LeaderboardRouteDependencies = {
@@ -17,7 +20,7 @@ export const createLeaderboardRouter = (
   const router = new Hono();
 
   router.get("/top", leaderboardTopQueryValidator, async (c) => {
-    const { limit } = c.req.valid("query");
+    const { limit } = c.req.valid("query") as LeaderboardTopQuery;
 
     const leaderboard = await deps.getTopUsersByPoints(limit);
 
