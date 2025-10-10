@@ -1,6 +1,10 @@
 import db from "@/db";
 import { user } from "@/db/schema";
-import { desc } from "drizzle-orm";
+import { desc, eq } from "drizzle-orm";
+
+export type UserPoints = {
+  points: number;
+};
 
 export type LeaderboardEntry = {
   id: string;
@@ -16,6 +20,14 @@ type PointsServiceDependencies = {
 export type PointsService = ReturnType<typeof createPointsService>;
 
 export const createPointsService = ({ db }: PointsServiceDependencies) => {
+  const getUserPoints = async (userId: string): Promise<UserPoints> => {
+    const [row] = await db
+      .select({ points: user.points })
+      .from(user)
+      .where(eq(user.id, userId));
+    return { points: row.points ?? 0 };
+  };
+
   const getTopUsersByPoints = async (
     limit = 10,
   ): Promise<LeaderboardEntry[]> => {
@@ -38,6 +50,7 @@ export const createPointsService = ({ db }: PointsServiceDependencies) => {
 
   return {
     getTopUsersByPoints,
+    getUserPoints,
   };
 };
 
@@ -47,4 +60,8 @@ export async function getTopUsersByPoints(
   limit = 10,
 ): Promise<LeaderboardEntry[]> {
   return pointsService.getTopUsersByPoints(limit);
+}
+
+export async function getUserPoints(userId: string): Promise<UserPoints> {
+  return pointsService.getUserPoints(userId);
 }
