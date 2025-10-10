@@ -3,17 +3,19 @@ import { View, Text, ScrollView, TouchableOpacity, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from 'react-native-paper';
 import type { ComponentProps } from 'react';
-import { useSessionContext } from '@/lib/session-context';
+import { useAuthContext } from '@/lib/auth-context';
 import { useRouter } from 'expo-router';
+import { signOut } from '@/lib/auth-client';
 
 export default function Profil() {
-  const session = useSessionContext();
+  const session = useAuthContext();
   const router = useRouter();
 
   const userData = {
-    name: session?.user?.name || 'Sarah Mahendra',
-    email: session?.user?.email || 'sarah.mahendra@gmail.com',
-    avatar: session?.user?.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+    name: session?.session?.user?.name,
+    email: session?.session?.user?.email,
+    avatar:
+      session?.session?.user?.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
   };
 
   return (
@@ -51,7 +53,7 @@ export default function Profil() {
                 icon="person-outline"
                 label="Edit Profil"
                 color="#6B5AED"
-                onPress={() => router.push('/(secure)/edit-profil')}
+                onPress={() => router.push('/edit-profil')}
               />
               <MenuItem
                 icon="document-text-outline"
@@ -74,7 +76,7 @@ export default function Profil() {
                 icon="log-out-outline"
                 label="Keluar"
                 color="#E74C3C"
-                onPress={() => {}}
+                onPress={() => signOut()}
                 isLogout
                 hideBorder
               />

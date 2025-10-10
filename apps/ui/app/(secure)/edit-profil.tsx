@@ -2,19 +2,19 @@ import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, Image, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { Avatar } from 'react-native-paper';
-import { useSessionContext } from '@/lib/session-context';
+import { useAuthContext } from '@/lib/auth-context';
 import { useRouter } from 'expo-router';
 
 export default function EditProfil() {
-  const session = useSessionContext();
+  const session = useAuthContext();
   const router = useRouter();
 
   const userData = {
-    name: session?.user?.name || 'Sarah Mahendra',
-    email: session?.user?.email || 'sarah.mahendra@gmail.com',
-    phone: '08123123123',
-    gender: 'Laki-laki',
-    avatar: session?.user?.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+    name: session.session.user.name,
+    email: session.session.user.email,
+    phone: '',
+    gender: '',
+    avatar: session.session.user.image,
   };
 
   return (
@@ -40,7 +40,7 @@ export default function EditProfil() {
         <View className="mt-32 min-h-full items-center rounded-t-[32px] bg-white pb-10 pt-10">
           {/* Avatar */}
           <View className="relative">
-            <Avatar.Image size={90} source={{ uri: userData.avatar }} />
+            <Avatar.Image size={90} source={{ uri: userData.avatar ?? '' }} />
           </View>
 
           {/* Info List */}
