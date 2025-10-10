@@ -9,15 +9,13 @@ export type LeaderboardEntry = {
   points: number;
 };
 
-type LeaderboardServiceDependencies = {
+type PointsServiceDependencies = {
   db: typeof db;
 };
 
-export type LeaderboardService = ReturnType<typeof createLeaderboardService>;
+export type PointsService = ReturnType<typeof createPointsService>;
 
-export const createLeaderboardService = ({
-  db,
-}: LeaderboardServiceDependencies) => {
+export const createPointsService = ({ db }: PointsServiceDependencies) => {
   const getTopUsersByPoints = async (
     limit = 10,
   ): Promise<LeaderboardEntry[]> => {
@@ -43,10 +41,10 @@ export const createLeaderboardService = ({
   };
 };
 
-const leaderboardService = createLeaderboardService({ db });
+const pointsService = createPointsService({ db });
 
 export async function getTopUsersByPoints(
   limit = 10,
 ): Promise<LeaderboardEntry[]> {
-  return leaderboardService.getTopUsersByPoints(limit);
+  return pointsService.getTopUsersByPoints(limit);
 }

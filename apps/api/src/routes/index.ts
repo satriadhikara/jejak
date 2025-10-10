@@ -2,24 +2,24 @@ import { Hono } from "hono";
 
 import { createHealthRouter } from "@/routes/health.route";
 import authRoutes from "@/routes/auth.route";
-import { createLeaderboardRouter } from "@/routes/leaderboard.route";
+import { createPointsRouter } from "@/routes/points.route";
 
 type RoutesDependencies = {
   healthRouter?: Hono;
   authRouter?: Hono;
-  leaderboardRouter?: Hono;
+  pointsRouter?: Hono;
 };
 
 export const createRoutes = ({
   healthRouter = createHealthRouter(),
   authRouter = authRoutes,
-  leaderboardRouter = createLeaderboardRouter(),
+  pointsRouter = createPointsRouter(),
 }: RoutesDependencies = {}) => {
   const routes = new Hono();
 
   routes.route("/health", healthRouter);
   routes.route("/auth", authRouter);
-  routes.route("/leaderboard", leaderboardRouter);
+  routes.route("/points", pointsRouter);
 
   return routes;
 };

@@ -1,8 +1,8 @@
 import { describe, expect, it, mock } from "bun:test";
 
-import { createLeaderboardRouter } from "@/routes/leaderboard.route";
+import { createPointsRouter } from "@/routes/points.route";
 
-describe("leaderboard routes", () => {
+describe("points routes", () => {
   const request = (url: string) =>
     new Request(url, {
       headers: {
@@ -22,7 +22,7 @@ describe("leaderboard routes", () => {
       ]),
     );
 
-    const router = createLeaderboardRouter({ getTopUsersByPoints });
+    const router = createPointsRouter({ getTopUsersByPoints });
 
     const response = await router.request(
       request("http://localhost/top?limit=5"),
@@ -45,7 +45,7 @@ describe("leaderboard routes", () => {
   it("rejects non-positive limits", async () => {
     const getTopUsersByPoints = mock();
 
-    const router = createLeaderboardRouter({ getTopUsersByPoints });
+    const router = createPointsRouter({ getTopUsersByPoints });
 
     const response = await router.request(
       request("http://localhost/top?limit=0"),
@@ -70,7 +70,7 @@ describe("leaderboard routes", () => {
   it("rejects non-numeric limits", async () => {
     const getTopUsersByPoints = mock();
 
-    const router = createLeaderboardRouter({ getTopUsersByPoints });
+    const router = createPointsRouter({ getTopUsersByPoints });
 
     const response = await router.request(
       request("http://localhost/top?limit=abc"),
