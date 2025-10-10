@@ -28,14 +28,14 @@ src/
     env.ts                 # Zod-validated environment loader
     auth.ts                # Better Auth configuration
   validators/
-    leaderboard.ts         # zValidator-powered schemas for leaderboard routes
+    points.ts              # zValidator-powered schemas for points routes
   routes/
     index.ts               # Registers feature routers with app.route()
     health.route.ts        # Route factory for health endpoints
-    leaderboard.route.ts   # Route factory for leaderboard endpoints
+    points.route.ts        # Route factory for points endpoints
   services/
     health.service.ts      # Business logic with dependency inject-able factory
-    leaderboard.service.ts # Leaderboard queries against Drizzle models
+    points.service.ts      # Points queries against Drizzle models
   db/
     schema.ts              # Drizzle schema definitions
     index.ts               # Drizzle client setup
@@ -45,10 +45,10 @@ tests/
     app.test.ts            # End-to-end contract for the HTTP server
   routes/
     health.route.test.ts   # Route-level contract tests
-    leaderboard.route.test.ts
+    points.route.test.ts
   services/
     health.service.test.ts # Unit tests for domain logic
-    leaderboard.service.test.ts
+    points.service.test.ts
 ```
 
 ## Routing Guidelines
@@ -67,13 +67,13 @@ tests/
 ## Request Validation
 
 - Use [`@hono/zod-validator`](https://github.com/honojs/middleware/tree/main/packages/zod-validator) to guard incoming requests.
-- Define reusable schemas in `src/validators` and export configured middlewares (e.g. `leaderboardTopQueryValidator`).
+- Define reusable schemas in `src/validators` and export configured middlewares (e.g. `pointsTopQueryValidator`).
 - In routes, attach the validator as middleware so `c.req.valid("query")` exposes strongly-typed, sanitized inputs.
 
-## Leaderboard Endpoint
+## Points Endpoint
 
-- `GET /leaderboard/top`: returns the top users ordered by `points` with an optional `limit` query param (default 10, max 100).
-- The handler relies on `leaderboardTopQueryValidator` to coerce and bound `limit`, and `getTopUsersByPoints` to fetch the data via Drizzle.
+- `GET /points/top`: returns the top users ordered by `points` with an optional `limit` query param (default 10, max 100).
+- The handler relies on `pointsTopQueryValidator` to coerce and bound `limit`, and `getTopUsersByPoints` to fetch the data via Drizzle.
 - Response shape: `{ data: Array<{ id, name, image, points }> }`.
 
 ## Adding a New Feature
