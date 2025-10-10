@@ -1,6 +1,7 @@
-import { Redirect, Stack } from 'expo-router';
-import { useSession } from '@/lib/auth-client';
-import { ActivityIndicator, View, Text } from 'react-native';
+import { Redirect, Stack } from "expo-router";
+import { useSession } from "@/lib/auth-client";
+import { ActivityIndicator, View, Text } from "react-native";
+import { SessionProvider } from "@/lib/session-context";
 
 export default function Layout() {
   const { data: session, isPending, error } = useSession();
@@ -25,5 +26,10 @@ export default function Layout() {
   if (!session) {
     return <Redirect href="/sign-in" />;
   }
-  return <Stack screenOptions={{ headerShown: false }} />;
+
+  return (
+    <SessionProvider session={session as any}>
+      <Stack screenOptions={{ headerShown: false }} />
+    </SessionProvider>
+  );
 }
