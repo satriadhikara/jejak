@@ -5,7 +5,6 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
 
-
 export default function Layout() {
   return (
     <Tabs
@@ -37,8 +36,7 @@ export default function Layout() {
           fontWeight: '500',
           marginTop: 18,
         },
-      }}
-    >
+      }}>
       <Tabs.Screen
         name="index"
         options={{
@@ -53,8 +51,7 @@ export default function Layout() {
                 minHeight: 45,
                 minWidth: 45,
                 alignItems: 'center',
-              }}
-            >
+              }}>
               <MaterialCommunityIcons name="home" size={size} color={color} />
             </View>
           ),
@@ -66,7 +63,7 @@ export default function Layout() {
           title: 'Pindai',
           tabBarIcon: ({ color, size, focused }) => (
             <View
-             style={{
+              style={{
                 backgroundColor: focused ? '#E8EAFF' : 'transparent',
                 borderRadius: 13,
                 marginTop: 8,
@@ -74,8 +71,7 @@ export default function Layout() {
                 minHeight: 45,
                 minWidth: 45,
                 alignItems: 'center',
-              }}
-            >
+              }}>
               <AntDesign name="global" size={size} color={color} />
             </View>
           ),
@@ -103,8 +99,7 @@ export default function Layout() {
                 shadowOpacity: 0.3,
                 shadowRadius: 4,
                 elevation: 5,
-              }}
-            >
+              }}>
               <Ionicons name="camera-sharp" size={35} color="#1EDD91" />
             </View>
           ),
@@ -125,8 +120,7 @@ export default function Layout() {
                 minHeight: 45,
                 minWidth: 45,
                 alignItems: 'center',
-              }}
-            >
+              }}>
               <Ionicons name="trophy-outline" size={size} color={color} />
             </View>
           ),
@@ -146,8 +140,7 @@ export default function Layout() {
                 minHeight: 45,
                 minWidth: 45,
                 alignItems: 'center',
-              }}
-            >
+              }}>
               <Entypo name="text-document" size={size} color={color} />
             </View>
           ),
