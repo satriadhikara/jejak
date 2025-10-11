@@ -273,12 +273,13 @@ export default function Home() {
                 <Avatar.Image size={35} source={{ uri: user.avatar }} />
                 <View className="flex-1">
                   <Text
-                    className={`text-[12px] font-inter-medium ${
+                    className={`font-inter-medium text-[12px] ${
                       user.isCurrentUser ? 'text-[#2431AE]' : 'text-black'
                     }`}>
                     {user.name}
                   </Text>
-                  <Text className={`text-[10px] font-inter-regular mt-0.5 ${
+                  <Text
+                    className={`mt-0.5 font-inter-regular text-[10px] ${
                       user.isCurrentUser ? 'text-[#2431AE]' : 'text-gray-500'
                     }`}>
                     {user.points} Poin Jejak
@@ -290,7 +291,7 @@ export default function Home() {
                       ? require('../../../assets/Logo-blue.png')
                       : require('../../../assets/Logo-gray.png')
                   }
-                  className="w-5 h-7"
+                  className="h-7 w-5"
                   resizeMode="contain"
                 />
               </View>
