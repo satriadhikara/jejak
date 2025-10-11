@@ -134,8 +134,11 @@ export default function Home() {
         resizeMode="cover"
       />
 
-      <ScrollView className="z-20 flex-1 bg-transparent">
-        <View className="mt-[35px] min-h-full rounded-t-[20px] bg-transparent p-4">
+      <ScrollView
+        className="z-20 flex-1 bg-transparent"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 70 }}>
+        <View className="mt-[35px] rounded-t-[20px] bg-transparent p-4 pb-20">
           {/* Header */}
           <View className="my-2 flex-row items-center justify-between px-2">
             <View>
@@ -178,7 +181,7 @@ export default function Home() {
           <View className="mt-5 flex-row items-center justify-between">
             <Text className="font-inter-semi-bold text-base text-[#242528]">Riwayat Laporanmu</Text>
             <TouchableOpacity onPress={handleViewAllReports}>
-              <Text className="font-inter-semi-bold text-xs text-primary-600">Lihat semua</Text>
+              <Text className="font-inter-semi-bold text-xs text-[#3848F4]">Lihat semua</Text>
             </TouchableOpacity>
           </View>
 
@@ -192,7 +195,7 @@ export default function Home() {
                   padding: 4,
                 }}>
                 <Card.Content style={{ padding: 0, margin: 0 }} className="!m-0 !p-0">
-                  <Text className="font-inter-medium">{report.title}</Text>
+                  <Text className="font-inter-medium text-base text-[#242528]">{report.title}</Text>
                   <Text className="mt-1.5 font-inter-regular text-sm text-[#ABAFB5]">
                     {report.date} • {report.location}
                   </Text>
@@ -201,7 +204,7 @@ export default function Home() {
 
                   <View className="flex-row items-center justify-between">
                     <View className="gap-1">
-                      <Text className="font-inter-se text-xs text-[#ABAFB5]">Status</Text>
+                      <Text className="font-inter-semibold text-xs text-[#ABAFB5]">Status</Text>
                       <View
                         className="rounded-[25px] px-3 py-1"
                         style={{ backgroundColor: report.statusBgColor }}>
@@ -250,7 +253,7 @@ export default function Home() {
           <View className="mt-5 flex-row items-center justify-between">
             <Text className="font-inter-semi-bold text-base text-[#242528]">Peringkat</Text>
             <TouchableOpacity onPress={handleViewAllRankings}>
-              <Text className="font-inter-semi-bold text-xs text-primary-600">Lihat semua</Text>
+              <Text className="font-inter-semi-bold text-xs text-[#3848F4]">Lihat semua</Text>
             </TouchableOpacity>
           </View>
 
@@ -258,23 +261,39 @@ export default function Home() {
           {rankings.map((user) => (
             <View
               key={user.id}
-              className={`mt-2 rounded-xl border p-3 ${
+              className={`mt-2 rounded-xl border p-3 py-4 ${
                 user.isCurrentUser
                   ? 'border-[#9DBDFF] bg-[#DCEAFF]'
                   : 'border-[#E5E6E8] bg-[#F5F5F6]'
               }`}>
-              <View className="flex-row items-center gap-2.5">
+              <View className="flex-row items-center gap-4">
                 <Text className="w-[25px] text-center text-base font-semibold text-[#2431AE]">
                   {user.rank}
                 </Text>
                 <Avatar.Image size={35} source={{ uri: user.avatar }} />
-                <Text
-                  className={`flex-1 text-[15px] font-medium ${
-                    user.isCurrentUser ? 'text-[#2431AE]' : 'text-black'
-                  }`}>
-                  {user.name}
-                </Text>
-                <Text className="text-[13px] text-[#2431AE]">{user.points} Poin Jejak</Text>
+                <View className="flex-1">
+                  <Text
+                    className={`font-inter-medium text-[12px] ${
+                      user.isCurrentUser ? 'text-[#2431AE]' : 'text-black'
+                    }`}>
+                    {user.name}
+                  </Text>
+                  <Text
+                    className={`mt-0.5 font-inter-regular text-[10px] ${
+                      user.isCurrentUser ? 'text-[#2431AE]' : 'text-gray-500'
+                    }`}>
+                    {user.points} Poin Jejak
+                  </Text>
+                </View>
+                <Image
+                  source={
+                    user.isCurrentUser
+                      ? require('../../../assets/Logo-blue.png')
+                      : require('../../../assets/Logo-gray.png')
+                  }
+                  className="h-7 w-5"
+                  resizeMode="contain"
+                />
               </View>
             </View>
           ))}
