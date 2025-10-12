@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { useQuery } from '@tanstack/react-query';
 
 interface LocationSearchBottomSheetProps {
   visible: boolean;
@@ -36,58 +37,48 @@ export default function LocationSearchBottomSheet({
   currentLocation,
 }: LocationSearchBottomSheetProps) {
   const [searchQuery, setSearchQuery] = useState('');
-  const [searchResults, setSearchResults] = useState<PlaceAutocomplete[]>([]);
-  const [isSearching, setIsSearching] = useState(false);
-  const [currentAddress, setCurrentAddress] = useState<string>('');
-  const [isLoadingCurrentAddress, setIsLoadingCurrentAddress] = useState(false);
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
+  const currentLatitude = currentLocation?.latitude ?? null;
+  const currentLongitude = currentLocation?.longitude ?? null;
 
-  // Load current location address
-  useEffect(() => {
-    if (currentLocation) {
-      loadCurrentAddress();
-    }
-  }, [currentLocation]);
-
-  const loadCurrentAddress = async () => {
-    if (!currentLocation) return;
-
-    setIsLoadingCurrentAddress(true);
-    try {
-      const result = await reverseGeocode(currentLocation.latitude, currentLocation.longitude);
-      setCurrentAddress(result.formatted_address);
-    } catch (error) {
-      console.error('Error loading current address:', error);
-      setCurrentAddress('Lokasi saat ini');
-    } finally {
-      setIsLoadingCurrentAddress(false);
-    }
-  };
-
-  // Debounced search
+  // Debounce search query
   useEffect(() => {
     const delayDebounce = setTimeout(() => {
-      if (searchQuery.trim().length > 2) {
-        performSearch();
-      } else {
-        setSearchResults([]);
-      }
+      setDebouncedSearchQuery(searchQuery);
     }, 500);
 
     return () => clearTimeout(delayDebounce);
   }, [searchQuery]);
 
-  const performSearch = async () => {
-    setIsSearching(true);
-    try {
-      const results = await searchPlaces(searchQuery, currentLocation ?? undefined);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Error searching places:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  };
+  // Fetch current location address
+  const { data: currentAddress, isLoading: isLoadingCurrentAddress } = useQuery({
+    queryKey: ['reverseGeocode', currentLocation?.latitude, currentLocation?.longitude],
+    queryFn: async () => {
+      if (!currentLocation) return null;
+      try {
+        const result = await reverseGeocode(currentLocation.latitude, currentLocation.longitude);
+        return result.formatted_address;
+      } catch (error) {
+        console.error('Error loading current address:', error);
+        return 'Lokasi saat ini';
+      }
+    },
+    enabled: !!currentLocation,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  // Search places
+  const { data: searchResults = [], isLoading: isSearching } = useQuery({
+    queryKey: ['searchPlaces', debouncedSearchQuery, currentLatitude, currentLongitude],
+    queryFn: async () => {
+      if (debouncedSearchQuery.trim().length <= 2) return [];
+      return await searchPlaces(debouncedSearchQuery, currentLocation ?? undefined);
+    },
+    enabled: debouncedSearchQuery.trim().length > 2,
+    staleTime: 30 * 1000, // 30 seconds
+  });
+
+  const displayedSearchResults = debouncedSearchQuery.trim().length > 2 ? searchResults : [];
 
   const handlePlaceSelect = async (place: PlaceAutocomplete) => {
     try {
@@ -99,7 +90,6 @@ export default function LocationSearchBottomSheet({
         placeId: details.place_id,
       });
       setSearchQuery('');
-      setSearchResults([]);
       onClose();
     } catch (error) {
       console.error('Error getting place details:', error);
@@ -204,11 +194,11 @@ export default function LocationSearchBottomSheet({
             ) : (
               /* Search Results */
               <FlatList
-                data={searchResults}
+                data={displayedSearchResults}
                 renderItem={renderPlaceItem}
                 keyExtractor={(item) => item.place_id}
                 ListEmptyComponent={
-                  !isSearching ? (
+                  debouncedSearchQuery.trim().length > 2 && !isSearching ? (
                     <View className="items-center justify-center py-8">
                       <Text className="font-inter-regular text-base text-[#8E8E93]">
                         Tidak ada hasil
