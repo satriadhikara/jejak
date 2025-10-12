@@ -29,6 +29,19 @@ interface LocationSearchBottomSheetProps {
       }
     | null
     | undefined;
+  mode: 'origin' | 'destination';
+  originValue: {
+    latitude: number;
+    longitude: number;
+    address: string;
+    mainText: string;
+  } | null;
+  destinationValue: {
+    latitude: number;
+    longitude: number;
+    address: string;
+    mainText: string;
+  } | null;
 }
 
 export default function LocationSearchBottomSheet({
@@ -36,6 +49,9 @@ export default function LocationSearchBottomSheet({
   onClose,
   onLocationSelect,
   currentLocation,
+  mode,
+  originValue,
+  destinationValue,
 }: LocationSearchBottomSheetProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -142,20 +158,47 @@ export default function LocationSearchBottomSheet({
             </View>
 
             <View className="flex-1">
-              <View className="py-4 pl-2 pr-4">
-                <TextInput
-                  value={searchQuery}
-                  onChangeText={setSearchQuery}
-                  placeholder="Cari titik awal"
-                  placeholderTextColor="#ABAFB5"
-                  className="!m-0 !p-0 font-inter-medium text-sm text-[#1A1A1A]"
-                  autoFocus
-                />
-              </View>
+              {mode === 'origin' ? (
+                <View className="py-4 pl-2 pr-4">
+                  <TextInput
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholder="Cari titik awal"
+                    placeholderTextColor="#ABAFB5"
+                    className="!m-0 !p-0 font-inter-medium text-sm text-[#1A1A1A]"
+                    autoFocus
+                  />
+                </View>
+              ) : (
+                <View className="py-4 pl-2 pr-4">
+                  <Text
+                    className="font-inter-medium text-sm"
+                    style={{ color: originValue ? '#1A1A1A' : '#ABAFB5' }}>
+                    {originValue ? originValue.mainText : 'Cari titik awal'}
+                  </Text>
+                </View>
+              )}
               <View className="h-[1px] w-full rounded-full bg-[#E5E6E8]" />
-              <View className="py-4 pl-2 pr-4">
-                <Text className="font-inter-medium text-sm text-[#ABAFB5]">Cari titik tujuan</Text>
-              </View>
+              {mode === 'destination' ? (
+                <View className="py-4 pl-2 pr-4">
+                  <TextInput
+                    value={searchQuery}
+                    onChangeText={setSearchQuery}
+                    placeholder="Cari titik tujuan"
+                    placeholderTextColor="#ABAFB5"
+                    className="!m-0 !p-0 font-inter-medium text-sm text-[#1A1A1A]"
+                    autoFocus
+                  />
+                </View>
+              ) : (
+                <View className="py-4 pl-2 pr-4">
+                  <Text
+                    className="font-inter-medium text-sm"
+                    style={{ color: destinationValue ? '#1A1A1A' : '#ABAFB5' }}>
+                    {destinationValue ? destinationValue.mainText : 'Cari titik tujuan'}
+                  </Text>
+                </View>
+              )}
             </View>
           </View>
 
