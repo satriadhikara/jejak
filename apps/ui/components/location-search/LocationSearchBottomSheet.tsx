@@ -19,6 +19,7 @@ interface LocationSearchBottomSheetProps {
     latitude: number;
     longitude: number;
     address: string;
+    mainText: string;
     placeId?: string;
   }) => void;
   currentLocation:
@@ -87,6 +88,7 @@ export default function LocationSearchBottomSheet({
         latitude: details.geometry.location.lat,
         longitude: details.geometry.location.lng,
         address: details.formatted_address,
+        mainText: place.structured_formatting.main_text,
         placeId: details.place_id,
       });
       setSearchQuery('');
@@ -102,7 +104,10 @@ export default function LocationSearchBottomSheet({
         latitude: currentLocation.latitude,
         longitude: currentLocation.longitude,
         address: currentAddress,
+        mainText: 'Lokasimu saat ini',
       });
+      setSearchQuery('');
+      onClose();
     }
   };
 

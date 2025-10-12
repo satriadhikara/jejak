@@ -16,6 +16,7 @@ export default function Pindai() {
     latitude: number;
     longitude: number;
     address: string;
+    mainText: string;
   } | null>(null);
 
   // Check and request location permission when component mounts
@@ -123,6 +124,7 @@ export default function Pindai() {
     latitude: number;
     longitude: number;
     address: string;
+    mainText: string;
   }) => {
     setSelectedOrigin(location);
 
@@ -186,6 +188,19 @@ export default function Pindai() {
           coordinates: userLocation,
           followUserLocation: false,
         }}
+        markers={
+          selectedOrigin
+            ? [
+                {
+                  coordinates: {
+                    latitude: selectedOrigin.latitude,
+                    longitude: selectedOrigin.longitude,
+                  },
+                  title: selectedOrigin.address,
+                },
+              ]
+            : []
+        }
       />
       <SafeAreaView className="flex-1" pointerEvents="box-none">
         <View className="mx-4 mt-8 flex-row items-center gap-[10px] rounded-2xl border border-[#E5E6E8] bg-white px-4">
@@ -199,7 +214,7 @@ export default function Pindai() {
                 className="font-inter-medium text-sm"
                 style={{ color: selectedOrigin ? '#1A1A1A' : '#ABAFB5' }}
                 numberOfLines={1}>
-                {selectedOrigin ? selectedOrigin.address : 'Cari titik awal'}
+                {selectedOrigin ? selectedOrigin.mainText : 'Cari titik awal'}
               </Text>
             </Pressable>
             <View className="h-[1px] w-full rounded-full bg-[#E5E6E8]" />
