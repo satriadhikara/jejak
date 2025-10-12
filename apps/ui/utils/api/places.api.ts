@@ -1,6 +1,6 @@
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
-const PLACES_API_BASE_URL = "https://places.googleapis.com/v1";
-const GEOCODING_API_BASE_URL = "https://maps.googleapis.com/maps/api/geocode";
+const PLACES_API_BASE_URL = 'https://places.googleapis.com/v1';
+const GEOCODING_API_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode';
 
 export interface PlaceAutocomplete {
   description: string;
@@ -36,12 +36,12 @@ export interface GeocodedAddress {
 
 // Helper to convert new API format to old format for compatibility
 function convertNewPlaceToOldFormat(place: any): PlaceAutocomplete {
-  const mainText = place.displayName?.text || place.formattedAddress || "";
-  const secondaryText = place.formattedAddress || "";
+  const mainText = place.displayName?.text || place.formattedAddress || '';
+  const secondaryText = place.formattedAddress || '';
 
   return {
     description: place.formattedAddress || mainText,
-    place_id: place.id || "",
+    place_id: place.id || '',
     structured_formatting: {
       main_text: mainText,
       secondary_text: secondaryText,
@@ -57,7 +57,7 @@ function convertNewPlaceToOldFormat(place: any): PlaceAutocomplete {
  */
 export async function searchPlaces(
   input: string,
-  location?: { latitude: number; longitude: number },
+  location?: { latitude: number; longitude: number }
 ): Promise<PlaceAutocomplete[]> {
   if (!input.trim()) {
     return [];
@@ -66,8 +66,8 @@ export async function searchPlaces(
   try {
     const requestBody: any = {
       textQuery: input,
-      languageCode: "id",
-      regionCode: "ID", // Indonesia
+      languageCode: 'id',
+      regionCode: 'ID', // Indonesia
     };
 
     // Add location bias if provided
@@ -84,12 +84,11 @@ export async function searchPlaces(
     }
 
     const response = await fetch(`${PLACES_API_BASE_URL}/places:searchText`, {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY || "",
-        "X-Goog-FieldMask":
-          "places.id,places.displayName,places.formattedAddress",
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY || '',
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress',
       },
       body: JSON.stringify(requestBody),
     });
@@ -102,7 +101,7 @@ export async function searchPlaces(
 
     return [];
   } catch (error) {
-    console.error("Error searching places:", error);
+    console.error('Error searching places:', error);
     return [];
   }
 }
@@ -115,40 +114,37 @@ export async function searchPlaces(
 export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
   try {
     // Remove 'places/' prefix if it exists
-    const cleanPlaceId = placeId.replace(/^places\//, "");
+    const cleanPlaceId = placeId.replace(/^places\//, '');
 
-    const response = await fetch(
-      `${PLACES_API_BASE_URL}/places/${cleanPlaceId}`,
-      {
-        method: "GET",
-        headers: {
-          "Content-Type": "application/json",
-          "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY || "",
-          "X-Goog-FieldMask": "id,displayName,formattedAddress,location",
-        },
+    const response = await fetch(`${PLACES_API_BASE_URL}/places/${cleanPlaceId}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY || '',
+        'X-Goog-FieldMask': 'id,displayName,formattedAddress,location',
       },
-    );
+    });
 
     const data = await response.json();
 
     if (data.id) {
       return {
         place_id: data.id,
-        formatted_address: data.formattedAddress || "",
+        formatted_address: data.formattedAddress || '',
         geometry: {
           location: {
             lat: data.location?.latitude || 0,
             lng: data.location?.longitude || 0,
           },
         },
-        name: data.displayName?.text || "",
+        name: data.displayName?.text || '',
       };
     } else {
-      console.error("Place Details API error:", data);
-      throw new Error("Failed to fetch place details");
+      console.error('Place Details API error:', data);
+      throw new Error('Failed to fetch place details');
     }
   } catch (error) {
-    console.error("Error fetching place details:", error);
+    console.error('Error fetching place details:', error);
     throw error;
   }
 }
@@ -161,26 +157,26 @@ export async function getPlaceDetails(placeId: string): Promise<PlaceDetails> {
  */
 export async function reverseGeocode(
   latitude: number,
-  longitude: number,
+  longitude: number
 ): Promise<GeocodedAddress> {
   try {
     const params = new URLSearchParams({
       latlng: `${latitude},${longitude}`,
-      key: GOOGLE_MAPS_API_KEY || "",
-      language: "id",
+      key: GOOGLE_MAPS_API_KEY || '',
+      language: 'id',
     });
 
     const response = await fetch(`${GEOCODING_API_BASE_URL}/json?${params}`);
     const data = await response.json();
 
-    if (data.status === "OK" && data.results.length > 0) {
+    if (data.status === 'OK' && data.results.length > 0) {
       return data.results[0];
     } else {
-      console.error("Geocoding API error:", data.status, data.error_message);
-      throw new Error(data.error_message || "Failed to reverse geocode");
+      console.error('Geocoding API error:', data.status, data.error_message);
+      throw new Error(data.error_message || 'Failed to reverse geocode');
     }
   } catch (error) {
-    console.error("Error reverse geocoding:", error);
+    console.error('Error reverse geocoding:', error);
     throw error;
   }
 }

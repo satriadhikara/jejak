@@ -1,22 +1,15 @@
-import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  FlatList,
-  ActivityIndicator,
-  Modal,
-} from "react-native";
-import { Image } from "expo-image";
+import React, { useState, useEffect } from 'react';
+import { View, Text, TextInput, Pressable, FlatList, ActivityIndicator, Modal } from 'react-native';
+import { Image } from 'expo-image';
 import {
   searchPlaces,
   getPlaceDetails,
   reverseGeocode,
   PlaceAutocomplete,
-} from "@/utils/api/places.api";
-import { SafeAreaView } from "react-native-safe-area-context";
-import Ionicons from "@expo/vector-icons/Ionicons";
+} from '@/utils/api/places.api';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 
 interface LocationSearchBottomSheetProps {
   visible: boolean;
@@ -42,10 +35,10 @@ export default function LocationSearchBottomSheet({
   onLocationSelect,
   currentLocation,
 }: LocationSearchBottomSheetProps) {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<PlaceAutocomplete[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [currentAddress, setCurrentAddress] = useState<string>("");
+  const [currentAddress, setCurrentAddress] = useState<string>('');
   const [isLoadingCurrentAddress, setIsLoadingCurrentAddress] = useState(false);
 
   // Load current location address
@@ -60,14 +53,11 @@ export default function LocationSearchBottomSheet({
 
     setIsLoadingCurrentAddress(true);
     try {
-      const result = await reverseGeocode(
-        currentLocation.latitude,
-        currentLocation.longitude,
-      );
+      const result = await reverseGeocode(currentLocation.latitude, currentLocation.longitude);
       setCurrentAddress(result.formatted_address);
     } catch (error) {
-      console.error("Error loading current address:", error);
-      setCurrentAddress("Lokasi saat ini");
+      console.error('Error loading current address:', error);
+      setCurrentAddress('Lokasi saat ini');
     } finally {
       setIsLoadingCurrentAddress(false);
     }
@@ -89,13 +79,10 @@ export default function LocationSearchBottomSheet({
   const performSearch = async () => {
     setIsSearching(true);
     try {
-      const results = await searchPlaces(
-        searchQuery,
-        currentLocation ?? undefined,
-      );
+      const results = await searchPlaces(searchQuery, currentLocation ?? undefined);
       setSearchResults(results);
     } catch (error) {
-      console.error("Error searching places:", error);
+      console.error('Error searching places:', error);
       setSearchResults([]);
     } finally {
       setIsSearching(false);
@@ -111,11 +98,11 @@ export default function LocationSearchBottomSheet({
         address: details.formatted_address,
         placeId: details.place_id,
       });
-      setSearchQuery("");
+      setSearchQuery('');
       setSearchResults([]);
       onClose();
     } catch (error) {
-      console.error("Error getting place details:", error);
+      console.error('Error getting place details:', error);
     }
   };
 
@@ -132,8 +119,7 @@ export default function LocationSearchBottomSheet({
   const renderPlaceItem = ({ item }: { item: PlaceAutocomplete }) => (
     <Pressable
       onPress={() => handlePlaceSelect(item)}
-      className="border-b border-[#E5E6E8] px-4 py-4"
-    >
+      className="border-b border-[#E5E6E8] px-4 py-4">
       <View className="flex-row items-center gap-3">
         <View className="h-10 w-10 items-center justify-center rounded-full bg-[#F5F5F5]">
           <Text className="text-lg">📍</Text>
@@ -142,10 +128,7 @@ export default function LocationSearchBottomSheet({
           <Text className="font-inter-semibold text-base text-[#1A1A1A]">
             {item.structured_formatting.main_text}
           </Text>
-          <Text
-            className="font-inter-regular text-sm text-[#8E8E93]"
-            numberOfLines={1}
-          >
+          <Text className="font-inter-regular text-sm text-[#8E8E93]" numberOfLines={1}>
             {item.structured_formatting.secondary_text}
           </Text>
         </View>
@@ -154,21 +137,13 @@ export default function LocationSearchBottomSheet({
   );
 
   return (
-    <Modal
-      visible={visible}
-      animationType="fade"
-      onRequestClose={onClose}
-      statusBarTranslucent
-    >
+    <Modal visible={visible} animationType="fade" onRequestClose={onClose} statusBarTranslucent>
       <SafeAreaView className="flex-1 bg-white">
         <View className="flex-1">
           {/* Search Fields Container */}
-          <View className="mx-4 mt-8 flex-row items-center gap-[10px] rounded-2xl bg-white border border-[#E5E6E8] px-4">
+          <View className="mx-4 mt-8 flex-row items-center gap-[10px] rounded-2xl border border-[#E5E6E8] bg-white px-4">
             <View>
-              <Image
-                source={require("../../assets/map.png")}
-                style={{ width: 24, height: 74 }}
-              />
+              <Image source={require('../../assets/map.png')} style={{ width: 24, height: 74 }} />
             </View>
 
             <View className="flex-1">
@@ -178,15 +153,13 @@ export default function LocationSearchBottomSheet({
                   onChangeText={setSearchQuery}
                   placeholder="Cari titik awal"
                   placeholderTextColor="#ABAFB5"
-                  className="font-inter-medium text-sm text-[#1A1A1A] !p-0 !m-0"
+                  className="!m-0 !p-0 font-inter-medium text-sm text-[#1A1A1A]"
                   autoFocus
                 />
               </View>
               <View className="h-[1px] w-full rounded-full bg-[#E5E6E8]" />
               <View className="py-4 pl-2 pr-4">
-                <Text className="font-inter-medium text-sm text-[#ABAFB5]">
-                  Cari titik tujuan
-                </Text>
+                <Text className="font-inter-medium text-sm text-[#ABAFB5]">Cari titik tujuan</Text>
               </View>
             </View>
           </View>
@@ -196,7 +169,7 @@ export default function LocationSearchBottomSheet({
             {searchQuery.trim().length === 0 ? (
               <>
                 {/* Pick from Map */}
-                <Pressable className="border border-[#E5E6E8] py-2.5 px-3 rounded-full mx-4 mt-3 flex-row items-center gap-2 self-start">
+                <Pressable className="mx-4 mt-3 flex-row items-center gap-2 self-start rounded-full border border-[#E5E6E8] px-3 py-2.5">
                   <Ionicons name="map" size={18} color="#00D996" />
                   <Text className="font-inter-regular text-sm text-[#242528]">
                     Pilih titik di peta
@@ -206,35 +179,20 @@ export default function LocationSearchBottomSheet({
                 {/* Current Location */}
                 {currentLocation && (
                   <>
-                    <View className="px-4 py-3">
-                      <Text className="font-inter-semibold text-sm text-[#8E8E93]">
-                        Terbaru
-                      </Text>
-                    </View>
-                    <Pressable
-                      onPress={handleCurrentLocationSelect}
-                      className="border-b border-[#E5E6E8] px-4 py-4"
-                    >
+                    <Pressable onPress={handleCurrentLocationSelect} className="mt-5 px-4">
                       <View className="flex-row items-center gap-3">
-                        <View className="h-10 w-10 items-center justify-center rounded-full bg-[#007AFF]">
-                          <Image
-                            source={require("../../assets/icons/cursor.svg")}
-                            style={{ width: 20, height: 20 }}
-                            tintColor="#FFFFFF"
-                          />
-                        </View>
+                        <MaterialIcons name="my-location" size={24} color="#5572FF" />
                         <View className="flex-1">
-                          <Text className="font-inter-semibold text-base text-[#1A1A1A]">
+                          <Text className="font-inter-semibold text-sm text-[#242528]">
                             Lokasimu saat ini
                           </Text>
                           {isLoadingCurrentAddress ? (
                             <ActivityIndicator size="small" color="#8E8E93" />
                           ) : (
                             <Text
-                              className="font-inter-regular text-sm text-[#8E8E93]"
-                              numberOfLines={1}
-                            >
-                              {currentAddress || "Memuat alamat..."}
+                              className="font-inter-regular text-sm text-[#242528]"
+                              numberOfLines={1}>
+                              {currentAddress || 'Memuat alamat...'}
                             </Text>
                           )}
                         </View>
