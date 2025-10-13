@@ -1,11 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, Pressable, FlatList, ActivityIndicator, Modal } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  Pressable,
+  FlatList,
+  ActivityIndicator,
+  Modal,
+  Alert,
+} from 'react-native';
 import { Image } from 'expo-image';
 import {
   searchPlaces,
   getPlaceDetails,
   reverseGeocode,
   PlaceAutocomplete,
+  calculateDistance,
+  MAX_SEARCH_RADIUS_KM,
 } from '@/utils/api/places.api';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -100,13 +111,34 @@ export default function LocationSearchBottomSheet({
   const handlePlaceSelect = async (place: PlaceAutocomplete) => {
     try {
       const details = await getPlaceDetails(place.place_id);
-      onLocationSelect({
+      const selectedLocation = {
         latitude: details.geometry.location.lat,
         longitude: details.geometry.location.lng,
         address: details.formatted_address,
         mainText: place.structured_formatting.main_text,
         placeId: details.place_id,
-      });
+      };
+
+      // Check distance from origin if we're selecting a destination
+      if (mode === 'destination' && originValue && currentLocation) {
+        const distance = calculateDistance(
+          originValue.latitude,
+          originValue.longitude,
+          selectedLocation.latitude,
+          selectedLocation.longitude
+        );
+
+        if (distance > MAX_SEARCH_RADIUS_KM) {
+          Alert.alert(
+            'Lokasi Terlalu Jauh',
+            `Titik tujuan yang kamu pilih berjarak ${distance.toFixed(2)} km dari titik awal. Maksimal jarak adalah ${MAX_SEARCH_RADIUS_KM} km.`,
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+      }
+
+      onLocationSelect(selectedLocation);
       setSearchQuery('');
       onClose();
     } catch (error) {
@@ -116,12 +148,33 @@ export default function LocationSearchBottomSheet({
 
   const handleCurrentLocationSelect = () => {
     if (currentLocation && currentAddress) {
-      onLocationSelect({
+      const selectedLocation = {
         latitude: currentLocation.latitude,
         longitude: currentLocation.longitude,
         address: currentAddress,
         mainText: 'Lokasimu saat ini',
-      });
+      };
+
+      // Check distance from origin if we're selecting a destination
+      if (mode === 'destination' && originValue) {
+        const distance = calculateDistance(
+          originValue.latitude,
+          originValue.longitude,
+          selectedLocation.latitude,
+          selectedLocation.longitude
+        );
+
+        if (distance > MAX_SEARCH_RADIUS_KM) {
+          Alert.alert(
+            'Lokasi Terlalu Jauh',
+            `Lokasi saat ini berjarak ${distance.toFixed(2)} km dari titik awal. Maksimal jarak adalah ${MAX_SEARCH_RADIUS_KM} km.`,
+            [{ text: 'OK' }]
+          );
+          return;
+        }
+      }
+
+      onLocationSelect(selectedLocation);
       setSearchQuery('');
       onClose();
     }
@@ -206,6 +259,16 @@ export default function LocationSearchBottomSheet({
           <View className="flex-1">
             {searchQuery.trim().length === 0 ? (
               <>
+                {/* Search Radius Info */}
+                {currentLocation && mode === 'destination' && originValue && (
+                  <View className="mx-4 mt-3 flex-row items-center gap-2 rounded-lg bg-[#F0F9FF] px-3 py-2.5">
+                    <Ionicons name="information-circle" size={18} color="#055987" />
+                    <Text className="font-inter-regular text-xs text-[#055987]">
+                      Titik tujuan maksimal berjarak {MAX_SEARCH_RADIUS_KM} km dari titik awal
+                    </Text>
+                  </View>
+                )}
+
                 {/* Pick from Map */}
                 <Pressable className="mx-4 mt-3 flex-row items-center gap-2 self-start rounded-full border border-[#E5E6E8] px-3 py-2.5">
                   <Ionicons name="map" size={18} color="#00D996" />

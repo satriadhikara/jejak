@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
 import { GoogleMaps } from 'expo-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -8,6 +8,9 @@ import { useQuery } from '@tanstack/react-query';
 import ErrorComponent from '@/components/error';
 import LocationSearchBottomSheet from '@/components/location-search/LocationSearchBottomSheet';
 import { getDirections } from '@/utils/api/places.api';
+import AnalyzeResultBottomSheet from '@/components/analyze/AnalyzeResultBottomSheet';
+import { analyzeRoute } from '@/utils/api/maps.api';
+import type { AnalyzeSuccessResponse } from '@/utils/types/maps.types';
 
 export default function Pindai() {
   const mapRef = useRef<any>(null);
@@ -26,6 +29,13 @@ export default function Pindai() {
     address: string;
     mainText: string;
   } | null>(null);
+  const [isResultModalVisible, setIsResultModalVisible] = useState(false);
+  const [analysisStatus, setAnalysisStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
+    'idle'
+  );
+  const [analysisResult, setAnalysisResult] = useState<AnalyzeSuccessResponse | null>(null);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const analysisAbortController = useRef<AbortController | null>(null);
 
   // Check and request location permission when component mounts
   useEffect(() => {
@@ -220,6 +230,131 @@ export default function Pindai() {
     }
   };
 
+  useEffect(() => {
+    if (!selectedOrigin || !selectedDestination) {
+      analysisAbortController.current?.abort();
+      analysisAbortController.current = null;
+      setAnalysisStatus('idle');
+      setAnalysisResult(null);
+      setAnalysisError(null);
+      setIsResultModalVisible(false);
+    }
+  }, [selectedOrigin, selectedDestination]);
+
+  const runAnalysis = useCallback(() => {
+    if (!selectedOrigin || !selectedDestination || !routeData) {
+      return;
+    }
+
+    const { distanceMeters, durationSeconds, coordinates } = routeData;
+
+    if (
+      typeof distanceMeters !== 'number' ||
+      Number.isNaN(distanceMeters) ||
+      typeof durationSeconds !== 'number' ||
+      Number.isNaN(durationSeconds) ||
+      !Array.isArray(coordinates) ||
+      coordinates.length === 0
+    ) {
+      return;
+    }
+
+    const controller = new AbortController();
+    analysisAbortController.current?.abort();
+    analysisAbortController.current = controller;
+
+    setIsResultModalVisible(true);
+    setAnalysisStatus('loading');
+    setAnalysisResult(null);
+    setAnalysisError(null);
+
+    analyzeRoute(
+      {
+        origin: {
+          latitude: selectedOrigin.latitude,
+          longitude: selectedOrigin.longitude,
+          label: selectedOrigin.mainText || selectedOrigin.address,
+        },
+        destination: {
+          latitude: selectedDestination.latitude,
+          longitude: selectedDestination.longitude,
+          label: selectedDestination.mainText || selectedDestination.address,
+        },
+        route: {
+          coordinates: coordinates.map((coord) => ({
+            latitude: coord.latitude,
+            longitude: coord.longitude,
+          })),
+          distance: distanceMeters,
+          duration: durationSeconds,
+        },
+      },
+      { signal: controller.signal }
+    )
+      .then((response) => {
+        if (controller.signal.aborted) return;
+        if (response.status === 'ok') {
+          setAnalysisStatus('success');
+          setAnalysisResult(response);
+        } else {
+          setAnalysisStatus('error');
+          setAnalysisError(response.message);
+        }
+      })
+      .catch((error) => {
+        if (controller.signal.aborted) return;
+        setAnalysisStatus('error');
+        setAnalysisError(error.message ?? 'Gagal menganalisis rute. Coba lagi nanti.');
+      });
+  }, [routeData, selectedDestination, selectedOrigin]);
+
+  useEffect(() => {
+    if (!selectedOrigin || !selectedDestination) {
+      return;
+    }
+
+    if (routeError) {
+      analysisAbortController.current?.abort();
+      analysisAbortController.current = null;
+      setAnalysisStatus('error');
+      setAnalysisResult(null);
+      setAnalysisError('Gagal memuat rute. Analisis tidak dapat dilakukan.');
+      return;
+    }
+
+    if (isLoadingRoute || !routeData) {
+      return;
+    }
+
+    runAnalysis();
+
+    return () => {
+      analysisAbortController.current?.abort();
+      analysisAbortController.current = null;
+    };
+  }, [
+    isLoadingRoute,
+    routeData,
+    routeError,
+    runAnalysis,
+    selectedDestination,
+    selectedOrigin,
+  ]);
+
+  const handleRetryAnalysis = useCallback(() => {
+    if (!routeData || isLoadingRoute || routeError) {
+      return;
+    }
+    runAnalysis();
+  }, [isLoadingRoute, routeData, routeError, runAnalysis]);
+
+  useEffect(() => {
+    return () => {
+      analysisAbortController.current?.abort();
+      analysisAbortController.current = null;
+    };
+  }, []);
+
   if (hasLocationPermission === null || (hasLocationPermission === true && isLoadingLocation)) {
     return (
       <View style={StyleSheet.absoluteFill} className="items-center justify-center bg-white">
@@ -244,6 +379,8 @@ export default function Pindai() {
   if (!userLocation) {
     return <ErrorComponent message="Unable to determine your location right now." />;
   }
+
+  const sheetStatus = analysisStatus === 'idle' ? 'loading' : analysisStatus;
 
   return (
     <>
@@ -383,6 +520,21 @@ export default function Pindai() {
             </View>
           </View>
         )}
+
+        {selectedOrigin &&
+          selectedDestination &&
+          analysisStatus !== 'idle' &&
+          !isResultModalVisible && (
+            <View className="absolute bottom-24 left-4 right-4 items-center">
+              <Pressable
+                onPress={() => setIsResultModalVisible(true)}
+                className="w-full items-center rounded-full bg-[#111827] px-4 py-3 shadow-sm shadow-black/10">
+                <Text className="font-inter-semibold text-sm text-white">
+                  {analysisStatus === 'error' ? 'Lihat status analisis' : 'Lihat hasil analisis'}
+                </Text>
+              </Pressable>
+            </View>
+          )}
       </SafeAreaView>
 
       <LocationSearchBottomSheet
@@ -393,6 +545,19 @@ export default function Pindai() {
         mode={searchMode}
         originValue={selectedOrigin}
         destinationValue={selectedDestination}
+      />
+
+      <AnalyzeResultBottomSheet
+        visible={isResultModalVisible}
+        onClose={() => setIsResultModalVisible(false)}
+        status={sheetStatus}
+        analysis={analysisStatus === 'success' ? analysisResult ?? undefined : undefined}
+        errorMessage={analysisError}
+        onRetry={analysisStatus === 'error' ? handleRetryAnalysis : undefined}
+        routeInfo={{
+          distance: routeData?.distance,
+          duration: routeData?.duration,
+        }}
       />
     </>
   );

@@ -8,6 +8,8 @@ const envSchema = z.object({
   PORT: z.string().optional(),
   GOOGLE_CLIENT_ID: z.string().min(1),
   GOOGLE_CLIENT_SECRET: z.string().min(1),
+  GOOGLE_MAPS_API_KEY: z.string().min(1),
+  GEMINI_API_KEY: z.string().min(1),
 });
 
 const parsedEnv = envSchema.safeParse(Bun.env);
