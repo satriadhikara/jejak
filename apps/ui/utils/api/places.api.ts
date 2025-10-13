@@ -1,6 +1,7 @@
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 const PLACES_API_BASE_URL = 'https://places.googleapis.com/v1';
 const GEOCODING_API_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode';
+const MAX_SEARCH_RADIUS_KM = 3; // Maximum search radius in kilometers
 
 export interface PlaceAutocomplete {
   description: string;
@@ -50,6 +51,31 @@ function convertNewPlaceToOldFormat(place: any): PlaceAutocomplete {
 }
 
 /**
+ * Calculate distance between two coordinates using Haversine formula
+ * @param lat1 - Latitude of first point
+ * @param lon1 - Longitude of first point
+ * @param lat2 - Latitude of second point
+ * @param lon2 - Longitude of second point
+ * @returns Distance in kilometers
+ */
+export function calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  const distance = R * c;
+  return distance;
+}
+
+export { MAX_SEARCH_RADIUS_KM };
+
+/**
  * Search for places using Google Places API (New)
  * @param input - Search query text
  * @param location - Optional location bias (lat,lng)
@@ -78,7 +104,7 @@ export async function searchPlaces(
             latitude: location.latitude,
             longitude: location.longitude,
           },
-          radius: 50000.0, // 50km radius
+          radius: MAX_SEARCH_RADIUS_KM * 1000, // Convert km to meters
         },
       };
     }
@@ -88,7 +114,7 @@ export async function searchPlaces(
       headers: {
         'Content-Type': 'application/json',
         'X-Goog-Api-Key': GOOGLE_MAPS_API_KEY || '',
-        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress',
+        'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location',
       },
       body: JSON.stringify(requestBody),
     });
