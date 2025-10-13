@@ -5,9 +5,11 @@ import { ReportHistoryItem } from '@/utils/types/beranda.types';
 const ReportCard = ({
   report,
   handleViewReportDetail,
+  variant = 'primary', // "primary" for index, "secondary" for riwayat
 }: {
   report: ReportHistoryItem;
   handleViewReportDetail: (reportId: number) => void;
+  variant?: 'primary' | 'secondary';
 }) => {
   return (
     <Card
@@ -36,11 +38,19 @@ const ReportCard = ({
             </View>
           </View>
 
-          <TouchableOpacity
-            className="items-center justify-center rounded-lg bg-[#1437B9] px-4 py-2.5"
-            onPress={() => handleViewReportDetail(report.id)}>
-            <Text className="font-inter-semi-bold text-sm text-[#F5F5F6]">Lihat detail</Text>
-          </TouchableOpacity>
+          {variant === 'primary' ? (
+            <TouchableOpacity
+              className="items-center justify-center rounded-lg bg-[#1437B9] px-4 py-2.5"
+              onPress={() => handleViewReportDetail(report.id)}>
+              <Text className="font-inter-semi-bold text-sm text-[#F5F5F6]">Lihat detail</Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              className="items-center justify-center rounded-lg bg-[#EBF4FF] px-4 py-2.5"
+              onPress={() => handleViewReportDetail(report.id)}>
+              <Text className="font-inter-semi-bold text-sm text-[#2431AE]">Lihat detail</Text>
+            </TouchableOpacity>
+          )}
         </View>
       </Card.Content>
     </Card>
