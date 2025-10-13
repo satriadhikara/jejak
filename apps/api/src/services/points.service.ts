@@ -1,9 +1,10 @@
 import db from "@/db";
 import { user } from "@/db/schema";
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq, gt, lt, or, sql } from "drizzle-orm";
 
 export type UserPoints = {
   points: number;
+  rank: number;
 };
 
 export type LeaderboardEntry = {
@@ -21,11 +22,40 @@ export type PointsService = ReturnType<typeof createPointsService>;
 
 export const createPointsService = ({ db }: PointsServiceDependencies) => {
   const getUserPoints = async (userId: string): Promise<UserPoints> => {
-    const [row] = await db
-      .select({ points: user.points })
+    const [userData] = await db
+      .select({
+        points: user.points,
+        createdAt: user.createdAt,
+      })
       .from(user)
       .where(eq(user.id, userId));
-    return { points: row.points ?? 0 };
+
+    if (!userData) {
+      throw new Error("User not found");
+    }
+
+    const userPoints = userData.points ?? 0;
+
+    // Calculate rank: count users with higher points OR same points but earlier creation
+    const [rankData] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(user)
+      .where(
+        or(
+          gt(user.points, userPoints),
+          and(
+            eq(user.points, userPoints),
+            lt(user.createdAt, userData.createdAt),
+          ),
+        ),
+      );
+
+    const rank = (rankData?.count ?? 0) + 1;
+
+    return {
+      points: userPoints,
+      rank,
+    };
   };
 
   const getTopUsersByPoints = async (

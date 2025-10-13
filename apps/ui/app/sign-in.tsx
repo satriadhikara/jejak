@@ -1,11 +1,11 @@
-import { View, Text, Pressable, ToastAndroid } from 'react-native';
+import { View, Text, Pressable, ToastAndroid, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from '@expo/vector-icons/Feather';
 import { useRef, useMemo } from 'react';
 import BottomSheet, { BottomSheetView } from '@gorhom/bottom-sheet';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { signIn as signInBetterAuth } from '@/lib/auth-client';
-import { Image } from 'expo-image';
+import { Image as ExpoImage } from 'expo-image';
 import { router } from 'expo-router';
 
 export default function SignIn() {
@@ -35,15 +35,26 @@ export default function SignIn() {
 
   return (
     <GestureHandlerRootView className="flex-1">
-      <View className="flex-1 bg-primary">
-        <SafeAreaView className="flex flex-1 flex-col justify-end px-4 pb-5">
-          <Text className="mb-2 font-inter-regular text-5xl text-white">Jejak</Text>
-          <Text className="mb-4 font-inter-regular text-2xl text-secondary">
-            Langkah Kecil, Perubahan Besar
-          </Text>
-          <Text className="mb-11 font-inter-regular text-lg text-white">
-            Setiap laporan Anda adalah langkah menuju kota yang lebih baik.
-          </Text>
+      <View className="relative flex-1 bg-primary">
+        <Image
+          source={require('@/assets/loginBG.png')}
+          className="absolute bottom-0 left-0 right-0 top-0 h-full w-full"
+          resizeMode="cover"
+        />
+
+        <SafeAreaView className="z-5 relative flex flex-1 flex-col justify-end px-4 pb-5">
+          <View className="relative">
+            <View className="relative z-10">
+              <Text className="font-inter-semibold mb-2 text-5xl text-white">Jejak</Text>
+              <Text className="font-inter-semibold mb-4 text-2xl text-secondary">
+                Langkah Kecil, Perubahan Besar
+              </Text>
+              <Text className="font-inter-semibold mb-11 text-lg text-white">
+                Setiap laporan Anda adalah langkah menuju kota yang lebih baik.
+              </Text>
+            </View>
+          </View>
+
           <View className="flex flex-col items-end justify-end">
             <Pressable
               onPress={handleOpenModal}
@@ -62,7 +73,7 @@ export default function SignIn() {
           enablePanDownToClose={true}
           backgroundStyle={{ backgroundColor: '#FFFFFF' }}
           handleIndicatorStyle={{ backgroundColor: '#D9D9D9', width: 64 }}>
-          <BottomSheetView className="flex-1 px-6 py-6">
+          <BottomSheetView className="z-6 flex-1 px-6 py-6">
             <View className="mb-6 flex flex-col items-center justify-center">
               <Text className="font-inter-bold text-2xl text-primary">Selamat datang!</Text>
             </View>
@@ -78,7 +89,7 @@ export default function SignIn() {
                 <Pressable
                   className="w-1/2 flex-row items-center justify-center gap-2 rounded-2xl border border-[#ABAFB5] bg-white px-6 py-4"
                   onPress={handleSignInWithGoogle}>
-                  <Image
+                  <ExpoImage
                     source={require('@/assets/icons/google.svg')}
                     style={{ width: 19, height: 19 }}
                   />
@@ -86,7 +97,7 @@ export default function SignIn() {
                 </Pressable>
 
                 <Pressable className="w-1/2 flex-row items-center justify-center gap-3 rounded-2xl border border-[#ABAFB5] bg-white px-6 py-4">
-                  <Image
+                  <ExpoImage
                     source={require('@/assets/icons/apple.svg')}
                     style={{ width: 19, height: 19 }}
                   />

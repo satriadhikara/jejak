@@ -113,7 +113,7 @@ function MenuItem({ icon, label, color, onPress, isLogout, hideBorder }: MenuIte
         </View>
         <Text
           className={`font-inter-medium text-base ${
-            isLogout ? 'text-[#E74C3C]' : 'text-[#242528]'
+            isLogout ? 'text-[#EB3030]' : 'text-[#404041]'
           }`}>
           {label}
         </Text>
