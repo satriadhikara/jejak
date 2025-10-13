@@ -2,11 +2,14 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Image, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import EmptyReportHistory from '@/components/beranda/empty-report-histoy';
-import ReportCardRiwayat from '@/components/riwayat/report-card';
+import ReportCard from '@/components/beranda/report-card';
+import ReportDraftCardRiwayat from '@/components/riwayat/report-draft-card';
 import { ReportHistoryItem } from '@/utils/types/beranda.types';
 import Feather from '@expo/vector-icons/Feather';
+import { useRouter } from 'expo-router';
 
 export default function RiwayatScreen() {
+  const router = useRouter();
   const [activeTab, setActiveTab] = useState('Laporan');
   const [filter, setFilter] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState(''); // 1. Add search state
@@ -15,8 +18,9 @@ export default function RiwayatScreen() {
     console.log('Navigating to report creation screen');
   };
 
-  const handleViewReportDetail = () => {
-    console.log('Navigating to report detail screen');
+  const handleViewReportDetail = (reportId: number) => {
+    router.push('/riwayat-detail');
+    // If you want to pass the reportId, use: router.push(`/riwayat-detail?id=${reportId}`);
   };
 
   const tabs = ['Laporan', 'Draft'];
@@ -62,11 +66,15 @@ export default function RiwayatScreen() {
   ];
   // const reportHistory: ReportHistoryItem[] = [];
 
-  // 2. Filter by status
+  // 2. Filter by status (only for Laporan tab)
   const filteredByStatus =
-    filter === 'Semua' ? reportHistory : reportHistory.filter((report) => report.status === filter);
+    activeTab === 'Laporan'
+      ? filter === 'Semua'
+        ? reportHistory
+        : reportHistory.filter((report) => report.status === filter)
+      : reportHistory;
 
-  // 3. Filter by search query
+  // 3. Filter by search query (applies for both tabs)
   const filteredReports = filteredByStatus.filter(
     (report) =>
       report.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -112,8 +120,18 @@ export default function RiwayatScreen() {
               {tab}
             </Text>
             {tab === 'Draft' && (
-              <View className="absolute right-16 top-1 rounded-full border border-[#F5F5F6] bg-[#FAFAFB] px-1.5">
-                <Text className="font-inter-medium text-xs text-gray-400">3</Text>
+              <View
+                className={`absolute right-16 top-1 rounded-full border px-1.5 ${
+                  activeTab === 'Draft'
+                    ? 'border-[#D9E8FF] bg-[#EDF6FF]'
+                    : 'border-[#F5F5F6] bg-[#FAFAFB]'
+                }`}>
+                <Text
+                  className={`font-inter-medium text-xs ${
+                    activeTab === 'Draft' ? 'text-[#2F7AFF]' : 'text-gray-400'
+                  }`}>
+                  3
+                </Text>
               </View>
             )}
             {activeTab === tab && (
@@ -129,37 +147,53 @@ export default function RiwayatScreen() {
             className="px-5"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100 }}>
-            {/* Filter */}
-            <View className="mb-2 mt-2 flex-row items-center">
-              <Feather name="filter" size={22} color="#585A63" className="mr-2" />
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={{ paddingHorizontal: 0 }}>
-                {filters.map((item) => (
-                  <Pressable
-                    key={item}
-                    onPress={() => setFilter(item)}
-                    className={`mr-2 h-10 rounded-full border px-4 py-2 ${
-                      filter === item ? 'border-blue-600 bg-[#F6FBFF]' : 'border-[#E5E6E8] bg-white'
-                    }`}>
-                    <Text
-                      className={`text-sm ${
+            {activeTab === 'Laporan' && (
+              <View className="mb-2 mt-2 flex-row items-center">
+                <Feather name="filter" size={22} color="#585A63" className="mr-2" />
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 0 }}>
+                  {filters.map((item) => (
+                    <Pressable
+                      key={item}
+                      onPress={() => setFilter(item)}
+                      className={`mr-2 h-10 rounded-full border px-4 py-2 ${
                         filter === item
-                          ? 'font-inter-medium text-sm text-blue-600'
-                          : 'font-inter-medium text-sm text-gray-800'
+                          ? 'border-blue-600 bg-[#F6FBFF]'
+                          : 'border-[#E5E6E8] bg-white'
                       }`}>
-                      {item}
-                    </Text>
-                  </Pressable>
-                ))}
-              </ScrollView>
-            </View>
+                      <Text
+                        className={`text-sm ${
+                          filter === item
+                            ? 'font-inter-medium text-sm text-blue-600'
+                            : 'font-inter-medium text-sm text-gray-800'
+                        }`}>
+                        {item}
+                      </Text>
+                    </Pressable>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
 
-            {/* Report Cards */}
-            {filteredReports.length > 0 ? (
+            {/* Report Cards or Draft Cards */}
+            {activeTab === 'Laporan' ? (
+              filteredReports.length > 0 ? (
+                filteredReports.map((report) => (
+                  <ReportCard
+                    key={report.id}
+                    report={report}
+                    handleViewReportDetail={handleViewReportDetail}
+                    variant="secondary"
+                  />
+                ))
+              ) : (
+                <EmptyReportHistory handleCreateReport={handleCreateReport} />
+              )
+            ) : filteredReports.length > 0 ? (
               filteredReports.map((report) => (
-                <ReportCardRiwayat
+                <ReportDraftCardRiwayat
                   key={report.id}
                   report={report}
                   handleViewReportDetail={handleViewReportDetail}

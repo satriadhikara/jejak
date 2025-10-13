@@ -17,28 +17,28 @@ import PointsCard from '@/components/beranda/points-card';
 import { Skeleton, SkeletonCircle } from '@/components/Skeleton';
 import { getUserPoints, getTopUsersByPoints } from '@/utils/api/beranda.api';
 
-// const reportHistory: ReportHistoryItem[] = [
-//   {
-//     id: 1,
-//     title: "Kerusakan Trotoar ITB Ganesha",
-//     date: "3 Oktober 2025",
-//     location: "Jl. Ganesa No.10, Lb. Siliwangi",
-//     status: "Diperiksa",
-//     statusColor: "#717680",
-//     statusBgColor: "#F5F5F6",
-//   },
-//   {
-//     id: 2,
-//     title: "Kerusakan Trotoar ITB Ganesha",
-//     date: "3 Oktober 2025",
-//     location: "Jl. Ganesa No.10, Lb. Siliwangi",
-//     status: "Dikonfirmasi",
-//     statusColor: "#055987",
-//     statusBgColor: "#F0F9FF",
-//   },
-// ];
+const reportHistory: ReportHistoryItem[] = [
+  {
+    id: 1,
+    title: 'Kerusakan Trotoar ITB Ganesha',
+    date: '3 Oktober 2025',
+    location: 'Jl. Ganesa No.10, Lb. Siliwangi',
+    status: 'Diperiksa',
+    statusColor: '#717680',
+    statusBgColor: '#F5F5F6',
+  },
+  {
+    id: 2,
+    title: 'Kerusakan Trotoar ITB Ganesha',
+    date: '3 Oktober 2025',
+    location: 'Jl. Ganesa No.10, Lb. Siliwangi',
+    status: 'Dikonfirmasi',
+    statusColor: '#055987',
+    statusBgColor: '#F0F9FF',
+  },
+];
 
-const reportHistory: ReportHistoryItem[] = [];
+// const reportHistory: ReportHistoryItem[] = [];
 
 export default function Home() {
   const { session, cookies } = useAuthContext();
@@ -165,6 +165,7 @@ export default function Home() {
                 key={report.id}
                 report={report}
                 handleViewReportDetail={handleViewReportDetail}
+                variant="primary" // show the first button
               />
             ))
           ) : (
