@@ -286,6 +286,8 @@ export async function getDirections(
   coordinates: { latitude: number; longitude: number }[];
   distance: string;
   duration: string;
+  distanceMeters: number;
+  durationSeconds: number;
 }> {
   try {
     const requestBody = {
@@ -361,6 +363,8 @@ export async function getDirections(
         coordinates,
         distance,
         duration,
+        distanceMeters,
+        durationSeconds,
       };
     } else {
       console.error('Routes API error: No routes in response', {
