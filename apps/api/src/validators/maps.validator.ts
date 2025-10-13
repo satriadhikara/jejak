@@ -1,15 +1,13 @@
 import * as z from "zod";
 import { zValidator } from "@hono/zod-validator";
 
-import { formatValidationResult } from "@/validators/shared";
-
 const coordinateSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
 });
 
 const locationSchema = coordinateSchema.extend({
-  label: z.string().min(1),
+  label: z.string().min(1).optional(),
 });
 
 const mapsAnalyzeBodySchema = z.object({
@@ -17,8 +15,8 @@ const mapsAnalyzeBodySchema = z.object({
   destination: locationSchema,
   route: z.object({
     coordinates: z.array(coordinateSchema).min(2),
-    distance: z.string(),
-    duration: z.string(),
+    distance: z.number().positive(), // meters
+    duration: z.number().positive(), // seconds
   }),
 });
 
