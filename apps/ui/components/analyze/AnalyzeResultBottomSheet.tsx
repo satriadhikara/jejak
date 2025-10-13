@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useRef, useEffect } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -7,6 +7,8 @@ import {
   ScrollView,
   View,
   Text,
+  PanResponder,
+  Animated,
 } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import type { AnalyzeSuccessResponse, AnalysisCard } from '@/utils/types/maps.types';
@@ -25,6 +27,7 @@ type AnalyzeResultBottomSheetProps = {
 };
 
 const SCREEN_HEIGHT = Dimensions.get('window').height;
+const MIN_SHEET_HEIGHT = SCREEN_HEIGHT * 0.75;
 const MAX_SHEET_HEIGHT = SCREEN_HEIGHT * 0.75;
 
 type CategoryTheme = {
@@ -140,9 +143,7 @@ const renderNotices = (analysis: AnalyzeSuccessResponse | undefined) => {
             size={18}
             color={notice.severity === 'warning' ? '#EAB308' : '#3B82F6'}
           />
-          <Text className="flex-1 font-inter-regular text-xs text-[#4B5563]">
-            {notice.message}
-          </Text>
+          <Text className="flex-1 font-inter-regular text-xs text-[#4B5563]">{notice.message}</Text>
         </View>
       ))}
     </View>
@@ -150,7 +151,18 @@ const renderNotices = (analysis: AnalyzeSuccessResponse | undefined) => {
 };
 
 const renderCards = (analysis: AnalyzeSuccessResponse | undefined) => {
-  if (!analysis?.cards?.length) return null;
+  if (!analysis) return null;
+
+  if (!analysis.cards?.length) {
+    return (
+      <View className="items-center justify-center rounded-2xl border border-dashed border-[#E5E7EB] bg-[#F9FAFB] px-4 py-10">
+        <Ionicons name="information-circle" size={24} color="#9CA3AF" />
+        <Text className="mt-3 text-center font-inter-medium text-sm text-[#6B7280]">
+          Analisis berhasil, namun tidak ada kartu rekomendasi yang dihasilkan.
+        </Text>
+      </View>
+    );
+  }
 
   return (
     <View className="gap-3">
@@ -160,7 +172,10 @@ const renderCards = (analysis: AnalyzeSuccessResponse | undefined) => {
         return (
           <View
             key={card.id}
-            style={{ backgroundColor: theme.background, borderColor: theme.border }}
+            style={{
+              backgroundColor: theme.background,
+              borderColor: theme.border,
+            }}
             className="rounded-2xl border px-4 py-4">
             <View className="flex-row items-start gap-3">
               <View
@@ -171,7 +186,7 @@ const renderCards = (analysis: AnalyzeSuccessResponse | undefined) => {
                 <View className="flex-row items-center justify-between">
                   <Text
                     style={{ color: theme.text }}
-                    className="flex-1 font-inter-semibold text-base"
+                    className="font-inter-semibold flex-1 text-base"
                     numberOfLines={2}>
                     {card.title}
                   </Text>
@@ -204,39 +219,107 @@ const AnalyzeResultBottomSheet: React.FC<AnalyzeResultBottomSheetProps> = ({
   onRetry,
   routeInfo,
 }) => {
-  const sheetContent = useMemo(() => {
-    if (status === 'loading') {
-      return (
-        <View className="items-center justify-center py-12">
-          <ActivityIndicator size="large" color="#5572FF" />
-          <Text className="mt-4 font-inter-medium text-sm text-[#4B5563]">
-            Menganalisis rute...
-          </Text>
-        </View>
-      );
-    }
+  // console.log("[AnalyzeSheet] render", {
+  //   visible,
+  //   status,
+  //   hasAnalysis: !!analysis,
+  //   cards: analysis?.cards?.length ?? 0,
+  // });
 
-    if (status === 'error') {
-      return (
-        <View className="items-center justify-center py-10">
-          <Ionicons name="warning" size={40} color="#F97316" />
-          <Text className="mt-4 px-6 text-center font-inter-medium text-sm text-[#6B7280]">
-            {errorMessage || 'Gagal menganalisis rute. Coba lagi nanti.'}
-          </Text>
-          {onRetry && (
-            <Pressable
-              onPress={onRetry}
-              className="mt-5 rounded-full bg-[#5572FF] px-5 py-2.5">
-              <Text className="font-inter-medium text-sm text-white">Coba lagi</Text>
-            </Pressable>
-          )}
-        </View>
-      );
-    }
+  const translateY = useRef(new Animated.Value(0)).current;
+  const lastGestureDy = useRef(0);
 
-    return (
+  // Reset position when modal becomes visible
+  useEffect(() => {
+    if (visible) {
+      translateY.setValue(0);
+      lastGestureDy.current = 0;
+    }
+  }, [visible, translateY]);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => true,
+      onMoveShouldSetPanResponder: (_, gestureState) => {
+        // Only respond to vertical drags
+        return Math.abs(gestureState.dy) > 5;
+      },
+      onPanResponderGrant: () => {
+        translateY.setOffset(lastGestureDy.current);
+      },
+      onPanResponderMove: (_, gestureState) => {
+        // Limit dragging: can't drag down beyond min height, can't drag up beyond max expansion
+        const maxDragUp = -(MAX_SHEET_HEIGHT - MIN_SHEET_HEIGHT);
+        const maxDragDown = 0;
+        const newValue = Math.max(maxDragUp, Math.min(maxDragDown, gestureState.dy));
+        translateY.setValue(newValue);
+      },
+      onPanResponderRelease: (_, gestureState) => {
+        translateY.flattenOffset();
+
+        // Snap to positions
+        const maxDragUp = -(MAX_SHEET_HEIGHT - MIN_SHEET_HEIGHT);
+
+        if (gestureState.dy > 100) {
+          // Swipe down to close
+          onClose();
+          Animated.timing(translateY, {
+            toValue: 0,
+            duration: 200,
+            useNativeDriver: true,
+          }).start(() => {
+            lastGestureDy.current = 0;
+          });
+        } else if (gestureState.dy < -50) {
+          // Swipe up to expand
+          Animated.spring(translateY, {
+            toValue: maxDragUp,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 8,
+          }).start();
+          lastGestureDy.current = maxDragUp;
+        } else {
+          // Snap back to min height
+          Animated.spring(translateY, {
+            toValue: 0,
+            useNativeDriver: true,
+            tension: 50,
+            friction: 8,
+          }).start();
+          lastGestureDy.current = 0;
+        }
+      },
+    })
+  ).current;
+
+  let sheetContent: React.ReactNode;
+
+  if (status === 'loading') {
+    sheetContent = (
+      <View className="items-center justify-center py-12">
+        <ActivityIndicator size="large" color="#5572FF" />
+        <Text className="mt-4 font-inter-medium text-sm text-[#4B5563]">Menganalisis rute...</Text>
+      </View>
+    );
+  } else if (status === 'error') {
+    sheetContent = (
+      <View className="items-center justify-center py-10">
+        <Ionicons name="warning" size={40} color="#F97316" />
+        <Text className="mt-4 px-6 text-center font-inter-medium text-sm text-[#6B7280]">
+          {errorMessage || 'Gagal menganalisis rute. Coba lagi nanti.'}
+        </Text>
+        {onRetry && (
+          <Pressable onPress={onRetry} className="mt-5 rounded-full bg-[#5572FF] px-5 py-2.5">
+            <Text className="font-inter-medium text-sm text-white">Coba lagi</Text>
+          </Pressable>
+        )}
+      </View>
+    );
+  } else if (status === 'success' && analysis) {
+    sheetContent = (
       <ScrollView
-        className="flex-1"
+        style={{ flex: 1 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 24 }}>
         {renderSummary(analysis)}
@@ -244,7 +327,15 @@ const AnalyzeResultBottomSheet: React.FC<AnalyzeResultBottomSheetProps> = ({
         {renderCards(analysis)}
       </ScrollView>
     );
-  }, [analysis, errorMessage, onRetry, status]);
+  } else {
+    // Fallback for when status is success but data hasn't loaded yet
+    sheetContent = (
+      <View className="items-center justify-center py-12">
+        <ActivityIndicator size="large" color="#5572FF" />
+        <Text className="mt-4 font-inter-medium text-sm text-[#4B5563]">Memuat hasil...</Text>
+      </View>
+    );
+  }
 
   return (
     <Modal
@@ -255,10 +346,14 @@ const AnalyzeResultBottomSheet: React.FC<AnalyzeResultBottomSheetProps> = ({
       statusBarTranslucent>
       <View className="flex-1 justify-end bg-black/30">
         <Pressable className="flex-1" onPress={onClose} />
-        <View
-          style={{ maxHeight: MAX_SHEET_HEIGHT }}
-          className="rounded-t-[28px] bg-white px-6 pb-8 pt-4 shadow-lg">
-          <View className="items-center">
+        <Animated.View
+          style={{
+            minHeight: MIN_SHEET_HEIGHT,
+            maxHeight: MAX_SHEET_HEIGHT,
+            transform: [{ translateY }],
+          }}
+          className="flex rounded-t-[28px] bg-white px-6 pb-8 pt-4 shadow-lg">
+          <View className="items-center" {...panResponder.panHandlers}>
             <View className="h-1.5 w-12 rounded-full bg-[#E5E7EB]" />
           </View>
           <View className="mt-4 flex-row items-center justify-between">
@@ -281,8 +376,8 @@ const AnalyzeResultBottomSheet: React.FC<AnalyzeResultBottomSheetProps> = ({
               </Text>
             </View>
           )}
-          <View className="mt-4 flex-1">{sheetContent}</View>
-        </View>
+          <View className="mt-4 flex-1 overflow-hidden">{sheetContent}</View>
+        </Animated.View>
       </View>
     </Modal>
   );

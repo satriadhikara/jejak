@@ -541,7 +541,7 @@ function generateCards(
             ? "Beberapa fasilitas aksesibilitas tersedia namun tidak konsisten."
             : "Some accessibility features available but inconsistent.";
         return isIndonesian
-          ? "Fasilitas aksesibilitas minim atau tidak ada."
+          ? "Fasilitas aksesibilitas sangat minim."
           : "Limited or no accessibility features.";
       },
     },
@@ -575,8 +575,8 @@ function generateCards(
             ? "Lampu jalan ada; satu segmen cenderung gelap."
             : "Street lights present; one segment tends to be dark.";
         return isIndonesian
-          ? "Penerangan minim atau tidak ada."
-          : "Limited or no lighting.";
+          ? "Penerangan sangat minim."
+          : "Very limited lighting.";
       },
     },
     crossing: {
@@ -592,8 +592,8 @@ function generateCards(
             ? "Beberapa titik penyeberangan namun tidak lengkap."
             : "Some crossing points but incomplete.";
         return isIndonesian
-          ? "Minim atau tidak ada fasilitas penyeberangan."
-          : "Limited or no crossing facilities.";
+          ? "Sangat minim fasilitas penyeberangan."
+          : "Very limited crossing facilities.";
       },
     },
     obstruction: {
@@ -643,8 +643,8 @@ function generateCards(
             ? "Beberapa rambu tersedia."
             : "Some signs available.";
         return isIndonesian
-          ? "Minim atau tidak ada rambu petunjuk."
-          : "Limited or no wayfinding signs.";
+          ? "Sangat minim rambu petunjuk."
+          : "Very limited wayfinding signs.";
       },
     },
   };

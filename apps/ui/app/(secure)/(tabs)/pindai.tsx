@@ -256,6 +256,12 @@ export default function Pindai() {
       !Array.isArray(coordinates) ||
       coordinates.length === 0
     ) {
+      // console.log("[Analyze] Skipping analysis, invalid route data", {
+      //   distanceMeters,
+      //   durationSeconds,
+      //   hasCoordinates: Array.isArray(coordinates),
+      //   coordinatesLength: coordinates?.length ?? 0,
+      // });
       return;
     }
 
@@ -268,41 +274,54 @@ export default function Pindai() {
     setAnalysisResult(null);
     setAnalysisError(null);
 
-    analyzeRoute(
-      {
-        origin: {
-          latitude: selectedOrigin.latitude,
-          longitude: selectedOrigin.longitude,
-          label: selectedOrigin.mainText || selectedOrigin.address,
-        },
-        destination: {
-          latitude: selectedDestination.latitude,
-          longitude: selectedDestination.longitude,
-          label: selectedDestination.mainText || selectedDestination.address,
-        },
-        route: {
-          coordinates: coordinates.map((coord) => ({
-            latitude: coord.latitude,
-            longitude: coord.longitude,
-          })),
-          distance: distanceMeters,
-          duration: durationSeconds,
-        },
+    const payload = {
+      origin: {
+        latitude: selectedOrigin.latitude,
+        longitude: selectedOrigin.longitude,
+        label: selectedOrigin.mainText || selectedOrigin.address,
       },
-      { signal: controller.signal }
-    )
+      destination: {
+        latitude: selectedDestination.latitude,
+        longitude: selectedDestination.longitude,
+        label: selectedDestination.mainText || selectedDestination.address,
+      },
+      route: {
+        coordinates: coordinates.map((coord) => ({
+          latitude: coord.latitude,
+          longitude: coord.longitude,
+        })),
+        distance: distanceMeters,
+        duration: durationSeconds,
+      },
+    };
+
+    // console.log("[Analyze] Starting analysis", {
+    //   payload,
+    //   routeDistanceReadable: routeData.distance,
+    //   routeDurationReadable: routeData.duration,
+    // });
+
+    analyzeRoute(payload, { signal: controller.signal })
       .then((response) => {
         if (controller.signal.aborted) return;
         if (response.status === 'ok') {
+          console.log('[Analyze] Success response', {
+            summary: response.summary,
+            cardsCount: response.cards?.length ?? 0,
+            noticesCount: response.notices?.length ?? 0,
+            meta: response.meta,
+          });
           setAnalysisStatus('success');
           setAnalysisResult(response);
         } else {
+          console.log('[Analyze] Error response', response);
           setAnalysisStatus('error');
           setAnalysisError(response.message);
         }
       })
       .catch((error) => {
         if (controller.signal.aborted) return;
+        console.error('[Analyze] Request failed', error);
         setAnalysisStatus('error');
         setAnalysisError(error.message ?? 'Gagal menganalisis rute. Coba lagi nanti.');
       });
@@ -314,6 +333,7 @@ export default function Pindai() {
     }
 
     if (routeError) {
+      console.error('[Analyze] Route fetch error, analysis aborted', routeError);
       analysisAbortController.current?.abort();
       analysisAbortController.current = null;
       setAnalysisStatus('error');
@@ -322,9 +342,15 @@ export default function Pindai() {
       return;
     }
 
-    if (isLoadingRoute || !routeData) {
-      return;
-    }
+    // if (isLoadingRoute) {
+    //   console.log("[Analyze] Waiting for route data before analysis");
+    //   return;
+    // }
+
+    // if (!routeData) {
+    //   console.log("[Analyze] No route data available, skipping analysis");
+    //   return;
+    // }
 
     runAnalysis();
 
@@ -332,14 +358,7 @@ export default function Pindai() {
       analysisAbortController.current?.abort();
       analysisAbortController.current = null;
     };
-  }, [
-    isLoadingRoute,
-    routeData,
-    routeError,
-    runAnalysis,
-    selectedDestination,
-    selectedOrigin,
-  ]);
+  }, [isLoadingRoute, routeData, routeError, runAnalysis, selectedDestination, selectedOrigin]);
 
   const handleRetryAnalysis = useCallback(() => {
     if (!routeData || isLoadingRoute || routeError) {
@@ -379,8 +398,6 @@ export default function Pindai() {
   if (!userLocation) {
     return <ErrorComponent message="Unable to determine your location right now." />;
   }
-
-  const sheetStatus = analysisStatus === 'idle' ? 'loading' : analysisStatus;
 
   return (
     <>
@@ -506,35 +523,24 @@ export default function Pindai() {
                 </View>
               ) : routeError ? (
                 <Text className="font-inter-medium text-sm text-red-500">Gagal memuat rute</Text>
-              ) : routeData ? (
-                <View className="flex-row items-center gap-2">
-                  <Text className="font-inter-semibold text-base text-[#5572FF]">
-                    {routeData.distance}
-                  </Text>
-                  <Text className="font-inter-regular text-sm text-[#8E8E93]">•</Text>
-                  <Text className="font-inter-medium text-sm text-[#1A1A1A]">
-                    {routeData.duration}
-                  </Text>
-                </View>
-              ) : null}
+              ) : (
+                routeData &&
+                selectedOrigin &&
+                selectedDestination &&
+                analysisStatus !== 'idle' &&
+                !isResultModalVisible && (
+                  <Pressable onPress={() => setIsResultModalVisible(true)}>
+                    <Text className="font-inter-semibold text-base text-[#5572FF]">
+                      {analysisStatus === 'success'
+                        ? 'Lihat hasil analisis'
+                        : 'Lihat status analisis'}
+                    </Text>
+                  </Pressable>
+                )
+              )}
             </View>
           </View>
         )}
-
-        {selectedOrigin &&
-          selectedDestination &&
-          analysisStatus !== 'idle' &&
-          !isResultModalVisible && (
-            <View className="absolute bottom-24 left-4 right-4 items-center">
-              <Pressable
-                onPress={() => setIsResultModalVisible(true)}
-                className="w-full items-center rounded-full bg-[#111827] px-4 py-3 shadow-sm shadow-black/10">
-                <Text className="font-inter-semibold text-sm text-white">
-                  {analysisStatus === 'error' ? 'Lihat status analisis' : 'Lihat hasil analisis'}
-                </Text>
-              </Pressable>
-            </View>
-          )}
       </SafeAreaView>
 
       <LocationSearchBottomSheet
@@ -547,18 +553,20 @@ export default function Pindai() {
         destinationValue={selectedDestination}
       />
 
-      <AnalyzeResultBottomSheet
-        visible={isResultModalVisible}
-        onClose={() => setIsResultModalVisible(false)}
-        status={sheetStatus}
-        analysis={analysisStatus === 'success' ? analysisResult ?? undefined : undefined}
-        errorMessage={analysisError}
-        onRetry={analysisStatus === 'error' ? handleRetryAnalysis : undefined}
-        routeInfo={{
-          distance: routeData?.distance,
-          duration: routeData?.duration,
-        }}
-      />
+      {isResultModalVisible && (
+        <AnalyzeResultBottomSheet
+          visible={isResultModalVisible}
+          onClose={() => setIsResultModalVisible(false)}
+          status={analysisStatus === 'idle' ? 'loading' : analysisStatus}
+          analysis={analysisStatus === 'success' ? (analysisResult ?? undefined) : undefined}
+          errorMessage={analysisError}
+          onRetry={analysisStatus === 'error' ? handleRetryAnalysis : undefined}
+          routeInfo={{
+            distance: routeData?.distance,
+            duration: routeData?.duration,
+          }}
+        />
+      )}
     </>
   );
 }

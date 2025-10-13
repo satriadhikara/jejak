@@ -325,12 +325,12 @@ export async function getDirections(
     });
 
     // Log the response status
-    console.log('Routes API response status:', response.status);
+    // console.log('Routes API response status:', response.status);
 
     const data: RoutesResponse = await response.json();
 
     // Log the full response for debugging
-    console.log('Routes API response data:', JSON.stringify(data, null, 2));
+    // console.log('Routes API response data:', JSON.stringify(data, null, 2));
 
     // Check if there's an error in the response
     if ((data as any).error) {
