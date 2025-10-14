@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Image, ScrollView, Pressable } from 'react-native';
+import { View, Text, TextInput, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import EmptyReportHistory from '@/components/beranda/empty-report-histoy';
 import ReportCard from '@/components/beranda/report-card';
@@ -8,12 +8,13 @@ import { ReportHistoryItem } from '@/utils/types/beranda.types';
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
 import { Avatar } from 'react-native-paper';
+import { useAuthContext } from '@/lib/auth-context';
 
 export default function RiwayatScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('Laporan');
   const [filter, setFilter] = useState('Semua');
-  const [searchQuery, setSearchQuery] = useState(''); // 1. Add search state
+  const [searchQuery, setSearchQuery] = useState('');
 
   const handleCreateReport = () => {
     console.log('Navigating to report creation screen');
@@ -26,6 +27,7 @@ export default function RiwayatScreen() {
 
   const tabs = ['Laporan', 'Draft'];
   const filters = ['Semua', 'Diperiksa', 'Dikonfirmasi', 'Dalam penanganan', 'Selesai ditangani'];
+  const { session, cookies } = useAuthContext();
 
   const reportHistory: ReportHistoryItem[] = [
     {
@@ -88,10 +90,7 @@ export default function RiwayatScreen() {
       <View className="mb-6 flex-row items-center justify-between px-5">
         <Text className="font-inter-semi-bold text-lg text-[#242528]">Riwayat</Text>
         <Pressable onPress={() => router.push('/profil')}>
-          <Avatar.Image
-            size={40}
-            source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
-          />
+          <Avatar.Image size={40} source={{ uri: session.user.image ?? '' }} />
         </Pressable>
       </View>
 
