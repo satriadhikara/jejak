@@ -22,6 +22,7 @@
         "@hono/zod-validator": "^0.7.3",
         "drizzle-orm": "^0.44.6",
         "hono": "^4.9.9",
+        "slugify": "^1.6.6",
         "zod": "^4.1.11",
       },
       "devDependencies": {
