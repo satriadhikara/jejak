@@ -1,4 +1,5 @@
 import { createRouter } from "@/lib/create-router";
+import { requireAuth } from "@/middlewares/require-auth";
 import {
   getUserReportById,
   getUserReports,
@@ -28,6 +29,8 @@ export const createReportRoute = (
   deps: ReportRouteDependencies = defaultDependencies,
 ) => {
   const router = createRouter();
+
+  router.use("/*", requireAuth);
 
   router.get("/", async (c) => {
     const user = c.get("user")!;
