@@ -7,6 +7,7 @@ import ReportDraftCardRiwayat from '@/components/riwayat/report-draft-card';
 import { ReportHistoryItem } from '@/utils/types/beranda.types';
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
+import { Avatar } from 'react-native-paper';
 
 export default function RiwayatScreen() {
   const router = useRouter();
@@ -86,10 +87,12 @@ export default function RiwayatScreen() {
       {/* Header */}
       <View className="mb-6 flex-row items-center justify-between px-5">
         <Text className="font-inter-semi-bold text-lg text-[#242528]">Riwayat</Text>
-        <Image
-          source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
-          className="h-9 w-9 rounded-full"
-        />
+        <Pressable onPress={() => router.push('/profil')}>
+          <Avatar.Image
+            size={40}
+            source={{ uri: 'https://randomuser.me/api/portraits/women/44.jpg' }}
+          />
+        </Pressable>
       </View>
 
       {/* Search Bar */}
