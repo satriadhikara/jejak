@@ -12,7 +12,7 @@ export const createMapsRoute = (
 ) => {
   const router = createRouter();
 
-  // router.use("/*", requireAuth);
+  router.use("/*", requireAuth);
 
   router.post("/analyze", mapsAnalyzeBodyValidator, async (c) => {
     const body = c.req.valid("json");

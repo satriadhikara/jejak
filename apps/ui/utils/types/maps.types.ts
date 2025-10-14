@@ -75,7 +75,7 @@ export type AnalyzeRequest = {
     label?: string;
   };
   route: {
-    coordinates: Array<{ latitude: number; longitude: number }>;
+    coordinates: { latitude: number; longitude: number }[];
     distance: number;
     duration: number;
   };

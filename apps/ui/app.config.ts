@@ -10,6 +10,37 @@ export default {
       output: 'static',
       favicon: './assets/favicon.png',
     },
+    splash: {
+      image: './assets/splash.png',
+      resizeMode: 'cover',
+      backgroundColor: '#161B50',
+    },
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: 'com.jejak.app',
+      splash: {
+        image: './assets/splash.png',
+        resizeMode: 'cover',
+        backgroundColor: '#161B50',
+      },
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: './assets/adaptive-icon.png',
+        backgroundColor: '#ffffff',
+      },
+      package: 'com.jejak.app',
+      splash: {
+        image: './assets/splash.png',
+        resizeMode: 'cover',
+        backgroundColor: '#161B50',
+      },
+      config: {
+        googleMaps: {
+          apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',
+        },
+      },
+    },
     plugins: [
       'expo-router',
       [
@@ -26,13 +57,6 @@ export default {
             './assets/fonts/Inter_28pt-ExtraBold.ttf',
             './assets/fonts/Inter_28pt-Black.ttf',
           ],
-        },
-      ],
-      [
-        'expo-splash-screen',
-        {
-          backgroundColor: '#161B50',
-          image: './assets/splash.png',
         },
       ],
       'expo-secure-store',
@@ -59,21 +83,5 @@ export default {
     icon: './assets/icon.png',
     userInterfaceStyle: 'light',
     assetBundlePatterns: ['**/*'],
-    ios: {
-      supportsTablet: true,
-      bundleIdentifier: 'com.jejak.app',
-    },
-    android: {
-      adaptiveIcon: {
-        foregroundImage: './assets/adaptive-icon.png',
-        backgroundColor: '#ffffff',
-      },
-      package: 'com.jejak.app',
-      config: {
-        googleMaps: {
-          apiKey: process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY || '',
-        },
-      },
-    },
   },
 };
