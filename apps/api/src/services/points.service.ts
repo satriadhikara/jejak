@@ -1,6 +1,6 @@
 import db from "@/db";
 import { user } from "@/db/schema";
-import { and, desc, eq, gt, lt, or, sql } from "drizzle-orm";
+import { and, desc, eq, gt, lt, or, sql, asc } from "drizzle-orm";
 
 export type UserPoints = {
   points: number;
@@ -69,7 +69,7 @@ export const createPointsService = ({ db }: PointsServiceDependencies) => {
         points: user.points,
       })
       .from(user)
-      .orderBy(desc(user.points), desc(user.createdAt))
+      .orderBy(desc(user.points), asc(user.createdAt))
       .limit(limit);
 
     return rows.map((row) => ({
