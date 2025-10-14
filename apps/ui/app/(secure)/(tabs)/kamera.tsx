@@ -1,11 +1,18 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Pressable } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export default function Camera() {
+  const router = useRouter();
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Kamera</Text>
       <Text style={styles.subtitle}>Halaman kamera akan ditampilkan di sini</Text>
+      <Pressable
+        onPress={() => router.push('/edit-draft-detail')}
+        style={{ marginTop: 20, padding: 10, backgroundColor: '#2431AE', borderRadius: 5 }}>
+        <Text style={{ color: '#fff' }}>Tekan Saya</Text>
+      </Pressable>
     </View>
   );
 }

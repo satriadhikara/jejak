@@ -5,7 +5,6 @@ import { router } from 'expo-router';
 
 const ReportDraftCardRiwayat = ({
   report,
-  handleViewReportDetail,
 }: {
   report: ReportHistoryItem;
   handleViewReportDetail: (reportId: number) => void;
@@ -38,7 +37,23 @@ const ReportDraftCardRiwayat = ({
 
           <TouchableOpacity
             className="items-center justify-center rounded-lg bg-[#EBF4FF] px-4 py-2.5"
-            onPress={() => router.push('/edit-draft-detail')}>
+            onPress={() =>
+              router.push({
+                pathname: '/edit-draft-detail',
+                params: {
+                  id: report.id,
+                  title: report.title,
+                  location: report.location,
+                  kategori: 'berat', // mock
+                  adaDampak: 'ya', // mock
+                  catatan: 'Pejalan kaki dapat tersandung', // mock
+                  imageUris: JSON.stringify([
+                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
+                    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
+                  ]), // mock
+                },
+              })
+            }>
             <Text className="font-inter-semi-bold text-sm text-[#2431AE]">Edit draf</Text>
           </TouchableOpacity>
         </View>
