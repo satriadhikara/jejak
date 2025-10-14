@@ -3,12 +3,14 @@ import authRoutes from "@/routes/auth.route";
 import { createPointsRouter } from "@/routes/points.route";
 import { createMapsRoute } from "@/routes/maps.route";
 import { createRouter } from "@/lib/create-router";
+import { createStorageRoute } from "@/routes/storage.route";
 
 type RoutesDependencies = {
   healthRouter?: ReturnType<typeof createRouter>;
   authRouter?: ReturnType<typeof createRouter>;
   pointsRouter?: ReturnType<typeof createRouter>;
   mapsRouter?: ReturnType<typeof createRouter>;
+  storageRouter?: ReturnType<typeof createRouter>;
 };
 
 export const createRoutes = ({
@@ -16,6 +18,7 @@ export const createRoutes = ({
   authRouter = authRoutes,
   pointsRouter = createPointsRouter(),
   mapsRouter = createMapsRoute(),
+  storageRouter = createStorageRoute(),
 }: RoutesDependencies = {}) => {
   const routes = createRouter();
 
@@ -23,6 +26,7 @@ export const createRoutes = ({
   routes.route("/auth", authRouter);
   routes.route("/points", pointsRouter);
   routes.route("/maps", mapsRouter);
+  routes.route("/storage", storageRouter);
 
   return routes;
 };
