@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Ionicons } from '@expo/vector-icons';
 import { Skeleton } from '../Skeleton';
@@ -16,7 +16,11 @@ const PointsCard = ({ isPending, points, onCreateReport }: PointsCardProps) => {
         <View>
           <Text className="font-inter-medium text-sm text-[#242528]">Poin Jejak</Text>
           <View className="mt-1 flex-row items-center">
-            <Ionicons name="footsteps-outline" size={20} color="#00D996" />
+            <Image
+              source={require('@/assets/Logo-green.png')}
+              style={{ width: 20, height: 20 }}
+              resizeMode="contain"
+            />
             {isPending ? (
               <Skeleton className="ml-1.5 text-lg font-bold text-[#242528]" width={50} />
             ) : (

@@ -130,7 +130,7 @@ export default function Peringkat() {
         {top3.length >= 3 && (
           <View className="h-[163px] flex-row items-end justify-center">
             {/* Rank 2 */}
-            <View className="mx-3 items-center">
+            <View className="mx-3 w-24 items-center">
               <Image
                 source={{ uri: top3[1].avatar }}
                 className="h-20 w-20 rounded-full border-4 border-[#C0C0C0]"
@@ -138,16 +138,24 @@ export default function Peringkat() {
               <View className="absolute -top-1 right-2 h-6 w-6 items-center justify-center rounded-full bg-[#C0C0C0]">
                 <Text className="font-inter-semi-bold text-sm text-white">2</Text>
               </View>
-              <Text className="mt-3 font-inter-semi-bold text-sm text-[#00D996]">
+              <Text
+                className="mt-3 font-inter-semi-bold text-sm text-[#00D996]"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ maxWidth: 80 }}>
                 {top3[1].name}
               </Text>
-              <Text className="font-inter-regular text-xs text-white">
+              <Text
+                className="font-inter-regular text-xs text-white"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ maxWidth: 80 }}>
                 {top3[1].points} Poin Jejak
               </Text>
             </View>
 
             {/* Rank 1 */}
-            <View className="mx-10 mb-2 items-center">
+            <View className="mx-10 mb-2 w-28 items-center">
               <Image
                 source={{ uri: top3[0].avatar }}
                 className="h-24 w-24 rounded-full border-4 border-[#FFCC02]"
@@ -159,16 +167,24 @@ export default function Peringkat() {
                   resizeMode="contain"
                 />
               </View>
-              <Text className="mt-3 font-inter-semi-bold text-base text-[#00D996]">
+              <Text
+                className="mt-3 font-inter-semi-bold text-base text-[#00D996]"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ maxWidth: 100 }}>
                 {top3[0].name}
               </Text>
-              <Text className="font-inter-regular text-xs text-white">
+              <Text
+                className="font-inter-regular text-xs text-white"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ maxWidth: 100 }}>
                 {top3[0].points} Poin Jejak
               </Text>
             </View>
 
             {/* Rank 3 */}
-            <View className="mx-3 items-center">
+            <View className="mx-3 w-24 items-center">
               <Image
                 source={{ uri: top3[2].avatar }}
                 className="h-20 w-20 rounded-full border-4 border-[#CD7F32]"
@@ -176,10 +192,18 @@ export default function Peringkat() {
               <View className="absolute -top-1 right-2 h-6 w-6 items-center justify-center rounded-full bg-[#CD7F32]">
                 <Text className="font-inter-semi-bold text-sm text-white">3</Text>
               </View>
-              <Text className="mt-3 font-inter-semi-bold text-sm text-[#00D996]">
+              <Text
+                className="mt-3 font-inter-semi-bold text-sm text-[#00D996]"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ maxWidth: 80 }}>
                 {top3[2].name}
               </Text>
-              <Text className="font-inter-regular text-xs text-white">
+              <Text
+                className="font-inter-regular text-xs text-white"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ maxWidth: 80 }}>
                 {top3[2].points} Poin Jejak
               </Text>
             </View>
