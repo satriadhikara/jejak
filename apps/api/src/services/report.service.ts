@@ -29,6 +29,63 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
     return reportData;
   };
 
+  const createReport = async ({
+    userId,
+    reportId,
+    title,
+    locationName,
+    locationGeo,
+    damageCategory,
+    impactOfDamage,
+    description,
+    photosUrls,
+    status,
+    statusHistory,
+  }: {
+    userId: string;
+    reportId: string;
+    title: string;
+    locationName: string;
+    locationGeo: {
+      lat: number;
+      lng: number;
+    };
+    damageCategory: "berat" | "sedang" | "ringan";
+    impactOfDamage?: string;
+    description?: string;
+    photosUrls: {
+      key: string;
+    }[];
+    status:
+      | "draft"
+      | "diperiksa"
+      | "dikonfirmasi"
+      | "dalam_penanganan"
+      | "selesai"
+      | "ditolak";
+    statusHistory: {
+      status: typeof status;
+      timestamp: string;
+      description: string;
+    }[];
+  }) => {
+    const result = await db.insert(report).values({
+      id: reportId,
+      reporterId: userId,
+      title,
+      locationName,
+      locationGeo,
+      damageCategory,
+      impactOfDamage,
+      description,
+      photosUrls,
+      status,
+      statusHistory,
+    });
+
+    return result;
+  };
+
   const deleteReportById = async (reportId: string, userId: string) => {
     await db
       .delete(report)
@@ -39,6 +96,7 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
 
   return {
     getUserReports,
+    createReport,
     getUserReportById,
     deleteReportById,
   };
@@ -52,6 +110,61 @@ export async function getUserReports(userId: string) {
 
 export async function getUserReportById(reportId: string, userId: string) {
   return reportService.getUserReportById(reportId, userId);
+}
+
+export async function createReport({
+  userId,
+  reportId,
+  title,
+  locationName,
+  locationGeo,
+  damageCategory,
+  impactOfDamage,
+  description,
+  photosUrls,
+  status,
+  statusHistory,
+}: {
+  userId: string;
+  reportId: string;
+  title: string;
+  locationName: string;
+  locationGeo: {
+    lat: number;
+    lng: number;
+  };
+  damageCategory: "berat" | "sedang" | "ringan";
+  impactOfDamage?: string;
+  description?: string;
+  photosUrls: {
+    key: string;
+  }[];
+  status:
+    | "draft"
+    | "diperiksa"
+    | "dikonfirmasi"
+    | "dalam_penanganan"
+    | "selesai"
+    | "ditolak";
+  statusHistory: {
+    status: typeof status;
+    timestamp: string;
+    description: string;
+  }[];
+}) {
+  return reportService.createReport({
+    userId,
+    reportId,
+    title,
+    locationName,
+    locationGeo,
+    damageCategory,
+    impactOfDamage,
+    description,
+    photosUrls,
+    status,
+    statusHistory,
+  });
 }
 
 export async function deleteReportById(reportId: string, userId: string) {

@@ -7,7 +7,45 @@ const reportGetParamsSchema = z.object({
   id: z.uuidv7(),
 });
 
-// const reportCreateBodySchema = z.object({});
+const reportCreateBodySchema = z.object({
+  id: z.uuidv7(),
+  title: z.string().min(1),
+  locationName: z.string().min(1),
+  locationGeo: z.object({
+    lat: z.number(),
+    lng: z.number(),
+  }),
+  damageCategory: z.enum(["berat", "sedang", "ringan"]),
+  impactOfDamage: z.string().optional(),
+  description: z.string().optional(),
+  photosUrls: z.array(
+    z.object({
+      key: z.string().min(1),
+    }),
+  ),
+  status: z.enum([
+    "draft",
+    "diperiksa",
+    "dikonfirmasi",
+    "dalam_penanganan",
+    "selesai",
+    "ditolak",
+  ]),
+  statusHistory: z.array(
+    z.object({
+      status: z.enum([
+        "draft",
+        "diperiksa",
+        "dikonfirmasi",
+        "dalam_penanganan",
+        "selesai",
+        "ditolak",
+      ]),
+      timestamp: z.string().min(1),
+      description: z.string().min(1),
+    }),
+  ),
+});
 
 const reportUpdateParamsSchema = z.object({
   id: z.uuidv7(),
@@ -22,10 +60,17 @@ const reportDeleteParamsSchema = z.object({
 export type ReportGetQuery = z.infer<typeof reportGetParamsSchema>;
 export type ReportUpdateQuery = z.infer<typeof reportUpdateParamsSchema>;
 export type ReportDeleteQuery = z.infer<typeof reportDeleteParamsSchema>;
+export type ReportCreateBody = z.infer<typeof reportCreateBodySchema>;
 
 export const reportGetQueryValidator = zValidator(
   "param",
   reportGetParamsSchema,
+  // formatValidationResult,
+);
+
+export const reportCreateBodyValidator = zValidator(
+  "json",
+  reportCreateBodySchema,
   // formatValidationResult,
 );
 

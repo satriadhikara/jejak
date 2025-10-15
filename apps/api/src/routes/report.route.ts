@@ -3,10 +3,11 @@ import { requireAuth } from "@/middlewares/require-auth";
 import {
   getUserReportById,
   getUserReports,
+  createReport,
   deleteReportById,
 } from "@/services/report.service";
 import {
-  // reportCreateBodyValidator,
+  reportCreateBodyValidator,
   reportDeleteParamsValidator,
   reportGetQueryValidator,
   // reportUpdateBodyValidator,
@@ -16,12 +17,14 @@ import {
 type ReportRouteDependencies = {
   getUserReports: typeof getUserReports;
   getUserReportById: typeof getUserReportById;
+  createReport: typeof createReport;
   deleteReportById: typeof deleteReportById;
 };
 
 const defaultDependencies: ReportRouteDependencies = {
   getUserReports,
   getUserReportById,
+  createReport,
   deleteReportById,
 };
 
@@ -53,9 +56,39 @@ export const createReportRoute = (
     });
   });
 
-  // router.post("/", reportCreateBodyValidator, async (c) => {
-  //   const user = c.get("user")!;
-  // });
+  router.post("/", reportCreateBodyValidator, async (c) => {
+    const user = c.get("user")!;
+    const {
+      id,
+      title,
+      locationName,
+      locationGeo,
+      damageCategory,
+      impactOfDamage,
+      description,
+      photosUrls,
+      status,
+      statusHistory,
+    } = c.req.valid("json");
+
+    const report = await deps.createReport({
+      userId: user.id,
+      reportId: id,
+      title,
+      locationName,
+      locationGeo,
+      damageCategory,
+      impactOfDamage,
+      description,
+      photosUrls,
+      status,
+      statusHistory,
+    });
+
+    return c.json({
+      data: report,
+    });
+  });
 
   // router.patch(
   //   "/:id",

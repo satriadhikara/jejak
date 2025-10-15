@@ -127,7 +127,7 @@ export const report = pgTable("report", {
   damageCategory: reportDamageCategory("damage_category").notNull(),
   impactOfDamage: text("impact_of_damage"),
   description: text("description"),
-  photoUrls: jsonb("photo_urls").$type<string[]>().notNull(),
+  photosUrls: jsonb("photo_urls").$type<{ key: string }[]>().notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => new Date())
     .notNull(),
