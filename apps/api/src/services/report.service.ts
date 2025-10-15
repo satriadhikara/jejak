@@ -1,6 +1,7 @@
 import db from "@/db";
 import { report } from "@/db/schema";
 import { and, desc, eq } from "drizzle-orm";
+import type { CreateReportInput } from "@/types/report.types";
 
 type ReportServiceDependencies = {
   db: typeof db;
@@ -41,34 +42,7 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
     photosUrls,
     status,
     statusHistory,
-  }: {
-    userId: string;
-    reportId: string;
-    title: string;
-    locationName: string;
-    locationGeo: {
-      lat: number;
-      lng: number;
-    };
-    damageCategory: "berat" | "sedang" | "ringan";
-    impactOfDamage?: string;
-    description?: string;
-    photosUrls: {
-      key: string;
-    }[];
-    status:
-      | "draft"
-      | "diperiksa"
-      | "dikonfirmasi"
-      | "dalam_penanganan"
-      | "selesai"
-      | "ditolak";
-    statusHistory: {
-      status: typeof status;
-      timestamp: string;
-      description: string;
-    }[];
-  }) => {
+  }: CreateReportInput) => {
     const result = await db.insert(report).values({
       id: reportId,
       reporterId: userId,
@@ -85,6 +59,14 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
 
     return result;
   };
+
+  // const updateReportById = async({
+  //   reportId,
+  //   userId,
+  //   title,
+  //   locationName,
+  //   locationGeo,
+  // });
 
   const deleteReportById = async (reportId: string, userId: string) => {
     await db
@@ -112,59 +94,8 @@ export async function getUserReportById(reportId: string, userId: string) {
   return reportService.getUserReportById(reportId, userId);
 }
 
-export async function createReport({
-  userId,
-  reportId,
-  title,
-  locationName,
-  locationGeo,
-  damageCategory,
-  impactOfDamage,
-  description,
-  photosUrls,
-  status,
-  statusHistory,
-}: {
-  userId: string;
-  reportId: string;
-  title: string;
-  locationName: string;
-  locationGeo: {
-    lat: number;
-    lng: number;
-  };
-  damageCategory: "berat" | "sedang" | "ringan";
-  impactOfDamage?: string;
-  description?: string;
-  photosUrls: {
-    key: string;
-  }[];
-  status:
-    | "draft"
-    | "diperiksa"
-    | "dikonfirmasi"
-    | "dalam_penanganan"
-    | "selesai"
-    | "ditolak";
-  statusHistory: {
-    status: typeof status;
-    timestamp: string;
-    description: string;
-  }[];
-}) {
-  return reportService.createReport({
-    userId,
-    reportId,
-    title,
-    locationName,
-    locationGeo,
-    damageCategory,
-    impactOfDamage,
-    description,
-    photosUrls,
-    status,
-    statusHistory,
-  });
+export async function createReport(input: CreateReportInput) {
+  return reportService.createReport(input);
 }
 
 export async function deleteReportById(reportId: string, userId: string) {
