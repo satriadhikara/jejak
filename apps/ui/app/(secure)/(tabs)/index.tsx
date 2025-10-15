@@ -131,13 +131,24 @@ export default function Home() {
         <View className="mt-[35px] rounded-t-[20px] bg-transparent p-4 pb-20">
           {/* Header */}
           <View className="my-2 flex-row items-center justify-between px-2">
-            <View>
-              <Text className="font-inter-semi-bold text-lg text-white">
-                Halo,{' '}
-                <Text className="font-inter-semi-bold text-lg text-secondary">{userData.name}</Text>
-                !👋
+            <View
+              className="flex-row items-center"
+              style={{ maxWidth: 200 }} // or remove and let it fill the parent width
+            >
+              <Text className="font-inter-semi-bold text-lg text-white">Halo, </Text>
+
+              <Text
+                className="font-inter-semi-bold text-lg text-secondary"
+                numberOfLines={1}
+                ellipsizeMode="tail"
+                style={{ flexShrink: 1, minWidth: 0 }} // minWidth:0 helps on RN Web
+              >
+                {userData.name}
               </Text>
+
+              <Text className="font-inter-semi-bold text-lg text-white">!👋</Text>
             </View>
+
             <TouchableOpacity onPress={handleNavigateToProfile}>
               <Avatar.Image size={40} source={{ uri: userData.avatar ?? '' }} />
             </TouchableOpacity>
