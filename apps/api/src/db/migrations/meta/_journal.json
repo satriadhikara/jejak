@@ -15,6 +15,13 @@
       "when": 1759717169065,
       "tag": "0001_wild_albert_cleary",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1760508163326,
+      "tag": "0002_stale_captain_america",
+      "breakpoints": true
     }
   ]
 }
