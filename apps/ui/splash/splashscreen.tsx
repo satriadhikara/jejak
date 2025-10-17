@@ -29,7 +29,7 @@ export default function SplashScreen({ onFinish }: SplashScreenProps) {
 
     const timer = setTimeout(() => onFinish && onFinish(), 4000);
     return () => clearTimeout(timer);
-  }, [onFinish]);
+  }, [onFinish, splash1, splash2, splash3, splash4, splashMiddle]);
 
   // Animated styles
   const style1 = useAnimatedStyle(() => ({ opacity: splash1.value }));
