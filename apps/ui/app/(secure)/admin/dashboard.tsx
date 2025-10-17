@@ -1,7 +1,8 @@
 import React from 'react';
-import { View, Text, TextInput, Image, ScrollView, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, Image, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
+import { useRouter } from 'expo-router';
 
 const dashboardStats = [
   {
@@ -39,6 +40,8 @@ const dashboardStats = [
 ];
 
 export default function DashboardScreen() {
+  const router = useRouter();
+
   return (
     <View className="relative flex-1 bg-transparent">
       {/* Background Image */}
@@ -65,9 +68,11 @@ export default function DashboardScreen() {
             </Text>
             <Text className="font-inter-semi-bold text-lg text-white">!👋</Text>
           </View>
-          <View className="w-10 h-10 rounded-full bg-white/30 items-center justify-center">
+          <Pressable
+            className="w-10 h-10 rounded-full bg-white/30 items-center justify-center"
+            onPress={() => router.push('/admin/profil')}>
             <Text className="text-white font-semibold">BS</Text>
-          </View>
+          </Pressable>
         </View>
 
         {/* Search Bar */}
@@ -98,9 +103,9 @@ export default function DashboardScreen() {
                 </Text>
                 <View className="flex-row items-center justify-between">
                   <Text className={`text-sm font-inter-medium ${stat.color}`}>{stat.label}</Text>
-                  <TouchableOpacity className="bg-white rounded-full p-2 ml-2 z-5">
+                  <Pressable className="bg-white rounded-full p-2 ml-2 z-5">
                     <Entypo name="export" size={18} color={stat.exportColor} />
-                  </TouchableOpacity>
+                  </Pressable>
                 </View>
               </View>
             ))}
@@ -116,11 +121,11 @@ export default function DashboardScreen() {
               Ada laporan yang belum diperbarui lebih dari 7 hari. Pastikan proses penanganan tetap
               berjalan agar tidak tertunda terlalu lama.
             </Text>
-            <TouchableOpacity className="bg-blue-50 rounded-xl py-2">
+            <Pressable className="bg-blue-50 rounded-xl py-2">
               <Text className="text-[#2431AE] text-center font-inter-semi-bold text-sm">
                 Lihat daftar laporan →
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
 
           <View className="bg-white rounded-2xl p-4">
@@ -130,11 +135,11 @@ export default function DashboardScreen() {
             <Text className="text-gray-500 font-inter-regular text-sm mb-3">
               3 laporan baru menunggu peninjauan hari ini
             </Text>
-            <TouchableOpacity className="bg-blue-50 rounded-xl py-2">
+            <Pressable className="bg-blue-50 rounded-xl py-2">
               <Text className="text-[#2431AE] text-center font-inter-semi-bold text-sm">
                 Tinjau sekarang →
               </Text>
-            </TouchableOpacity>
+            </Pressable>
           </View>
         </View>
       </ScrollView>
