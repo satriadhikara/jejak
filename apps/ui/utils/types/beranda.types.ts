@@ -24,7 +24,7 @@ export interface TopUsersByPointsItem {
 }
 
 export interface ReportHistoryItem {
-  id: number;
+  id: string;
   title: string;
   date: string;
   location: string;

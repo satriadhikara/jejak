@@ -8,7 +8,7 @@ const ReportCard = ({
   variant = 'primary', // "primary" for index, "secondary" for riwayat
 }: {
   report: ReportHistoryItem;
-  handleViewReportDetail: (reportId: number) => void;
+  handleViewReportDetail: (reportId: string) => void;
   variant?: 'primary' | 'secondary';
 }) => {
   return (
