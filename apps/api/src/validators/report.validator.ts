@@ -3,6 +3,10 @@ import { zValidator } from "@hono/zod-validator";
 
 // import { formatValidationResult } from "@/validators/shared";
 
+const reportGetQuerySchema = z.object({
+  draft: z.boolean().optional(),
+});
+
 const reportGetParamsSchema = z.object({
   id: z.uuidv7(),
 });
@@ -57,12 +61,19 @@ const reportDeleteParamsSchema = z.object({
   id: z.uuidv7(),
 });
 
-export type ReportGetQuery = z.infer<typeof reportGetParamsSchema>;
+export type ReportGetQuery = z.infer<typeof reportGetQuerySchema>;
+export type ReportGetParams = z.infer<typeof reportGetParamsSchema>;
 export type ReportUpdateQuery = z.infer<typeof reportUpdateParamsSchema>;
 export type ReportDeleteQuery = z.infer<typeof reportDeleteParamsSchema>;
 export type ReportCreateBody = z.infer<typeof reportCreateBodySchema>;
 
 export const reportGetQueryValidator = zValidator(
+  "query",
+  reportGetQuerySchema,
+  // formatValidationResult,
+);
+
+export const reportGetParamsValidator = zValidator(
   "param",
   reportGetParamsSchema,
   // formatValidationResult,

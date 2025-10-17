@@ -4,6 +4,7 @@ import { createPointsRouter } from "@/routes/points.route";
 import { createMapsRoute } from "@/routes/maps.route";
 import { createRouter } from "@/lib/create-router";
 import { createStorageRoute } from "@/routes/storage.route";
+import { createReportRoute } from "@/routes/report.route";
 
 type RoutesDependencies = {
   healthRouter?: ReturnType<typeof createRouter>;
@@ -11,6 +12,7 @@ type RoutesDependencies = {
   pointsRouter?: ReturnType<typeof createRouter>;
   mapsRouter?: ReturnType<typeof createRouter>;
   storageRouter?: ReturnType<typeof createRouter>;
+  reportRouter?: ReturnType<typeof createRouter>;
 };
 
 export const createRoutes = ({
@@ -19,6 +21,7 @@ export const createRoutes = ({
   pointsRouter = createPointsRouter(),
   mapsRouter = createMapsRoute(),
   storageRouter = createStorageRoute(),
+  reportRouter = createReportRoute(),
 }: RoutesDependencies = {}) => {
   const routes = createRouter();
 
@@ -27,7 +30,7 @@ export const createRoutes = ({
   routes.route("/points", pointsRouter);
   routes.route("/maps", mapsRouter);
   routes.route("/storage", storageRouter);
-
+  routes.route("/reports", reportRouter);
   return routes;
 };
 

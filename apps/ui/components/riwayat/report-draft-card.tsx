@@ -7,7 +7,7 @@ const ReportDraftCardRiwayat = ({
   report,
 }: {
   report: ReportHistoryItem;
-  handleViewReportDetail: (reportId: number) => void;
+  handleViewReportDetail: (reportId: string) => void;
 }) => {
   return (
     <Card

@@ -19,7 +19,7 @@ import { getUserPoints, getTopUsersByPoints } from '@/utils/api/beranda.api';
 
 const reportHistory: ReportHistoryItem[] = [
   {
-    id: 1,
+    id: '1',
     title: 'Kerusakan Trotoar ITB Ganesha',
     date: '3 Oktober 2025',
     location: 'Jl. Ganesa No.10, Lb. Siliwangi',
@@ -28,7 +28,7 @@ const reportHistory: ReportHistoryItem[] = [
     statusBgColor: '#F5F5F6',
   },
   {
-    id: 2,
+    id: '2',
     title: 'Kerusakan Trotoar ITB Ganesha',
     date: '3 Oktober 2025',
     location: 'Jl. Ganesa No.10, Lb. Siliwangi',
@@ -102,7 +102,7 @@ export default function Home() {
     console.log('Navigate to all reports');
   };
 
-  const handleViewReportDetail = (reportId: number) => {
+  const handleViewReportDetail = (reportId: string) => {
     // Handle view report detail navigation
     console.log('Navigate to report detail:', reportId);
   };
