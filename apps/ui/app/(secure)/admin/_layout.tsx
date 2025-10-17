@@ -4,6 +4,7 @@ export default function StackLayout() {
   return (
     <Stack>
       <Stack.Screen name="dashboard" options={{ headerShown: false }} />
+      <Stack.Screen name="profil" options={{ headerShown: false }} />
     </Stack>
   );
 }
