@@ -10,6 +10,7 @@ import {
   reportCreateBodyValidator,
   reportDeleteParamsValidator,
   reportGetQueryValidator,
+  reportGetParamsValidator,
   // reportUpdateBodyValidator,
   // reportUpdateParamsValidator,
 } from "@/validators/report.validator";
@@ -35,17 +36,18 @@ export const createReportRoute = (
 
   router.use("/*", requireAuth);
 
-  router.get("/", async (c) => {
+  router.get("/", reportGetQueryValidator, async (c) => {
     const user = c.get("user")!;
+    const { draft } = c.req.valid("query");
 
-    const reports = await deps.getUserReports(user.id);
+    const reports = await deps.getUserReports(user.id, draft ?? false);
 
     return c.json({
       data: reports,
     });
   });
 
-  router.get("/:id", reportGetQueryValidator, async (c) => {
+  router.get("/:id", reportGetParamsValidator, async (c) => {
     const user = c.get("user")!;
     const { id } = c.req.valid("param");
 

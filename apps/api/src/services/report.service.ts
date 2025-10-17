@@ -10,11 +10,15 @@ type ReportServiceDependencies = {
 export type ReportService = ReturnType<typeof createReportService>;
 
 export const createReportService = ({ db }: ReportServiceDependencies) => {
-  const getUserReports = async (userId: string) => {
+  const getUserReports = async (userId: string, draft: boolean) => {
     const reports = await db
       .select()
       .from(report)
-      .where(eq(report.reporterId, userId))
+      .where(
+        draft
+          ? and(eq(report.reporterId, userId), eq(report.status, "draft"))
+          : eq(report.reporterId, userId),
+      )
       .orderBy(desc(report.createdAt));
 
     return reports;
@@ -86,8 +90,8 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
 
 const reportService = createReportService({ db });
 
-export async function getUserReports(userId: string) {
-  return reportService.getUserReports(userId);
+export async function getUserReports(userId: string, draft: boolean = false) {
+  return reportService.getUserReports(userId, draft);
 }
 
 export async function getUserReportById(reportId: string, userId: string) {
