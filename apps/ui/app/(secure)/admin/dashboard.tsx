@@ -56,7 +56,7 @@ export default function DashboardScreen() {
         contentContainerStyle={{ paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}>
         {/* Header */}
-        <View className="my-2 flex-row items-center justify-between px-2 mb-5">
+        <View className="my-2 mb-5 flex-row items-center justify-between px-2">
           <View className="flex-row items-center" style={{ maxWidth: 200 }}>
             <Text className="font-inter-semi-bold text-lg text-white">Halo, </Text>
             <Text
@@ -69,41 +69,41 @@ export default function DashboardScreen() {
             <Text className="font-inter-semi-bold text-lg text-white">!👋</Text>
           </View>
           <Pressable
-            className="w-10 h-10 rounded-full bg-white/30 items-center justify-center"
+            className="h-10 w-10 items-center justify-center rounded-full bg-white/30"
             onPress={() => router.push('/admin/profil')}>
-            <Text className="text-white font-semibold">BS</Text>
+            <Text className="font-semibold text-white">BS</Text>
           </Pressable>
         </View>
 
         {/* Search Bar */}
-        <View className="bg-white rounded-full flex-row items-center px-4 py-2 mb-3 shadow-sm">
+        <View className="mb-3 flex-row items-center rounded-full bg-white px-4 py-2 shadow-sm">
           <Ionicons name="search" size={20} color="#888" />
           <TextInput
             placeholder="Cari laporan"
             placeholderTextColor="#ABAFB5"
-            className="ml-2 flex-1 text-sm text-gray-800 font-inter-medium"
+            className="ml-2 flex-1 font-inter-medium text-sm text-gray-800"
           />
         </View>
 
         {/* Summary Cards */}
-        <View className="bg-white rounded-2xl p-4 mb-3">
-          <Text className="text-black text-base font-inter-medium mb-3">Ringkasan Hari Ini</Text>
+        <View className="mb-3 rounded-2xl bg-white p-4">
+          <Text className="mb-3 font-inter-medium text-base text-black">Ringkasan Hari Ini</Text>
           <View className="flex-row flex-wrap justify-between">
             {dashboardStats.map((stat, idx) => (
               <View
                 key={stat.label}
-                className={`w-[48%] ${stat.bg} rounded-xl ${idx < 2 ? 'p-6' : 'p-4'} mb-3 relative overflow-hidden`}>
+                className={`w-[48%] ${stat.bg} rounded-xl ${idx < 2 ? 'p-6' : 'p-4'} relative mb-3 overflow-hidden`}>
                 <Image
                   source={stat.image}
-                  className="absolute right-0 bottom-0 h-32 w-44"
+                  className="absolute bottom-0 right-0 h-32 w-44"
                   resizeMode="cover"
                 />
-                <Text className={`text-3xl font-inter-semi-bold mb-1 ${stat.color}`}>
+                <Text className={`mb-1 font-inter-semi-bold text-3xl ${stat.color}`}>
                   {stat.value}
                 </Text>
                 <View className="flex-row items-center justify-between">
-                  <Text className={`text-sm font-inter-medium ${stat.color}`}>{stat.label}</Text>
-                  <Pressable className="bg-white rounded-full p-2 ml-2 z-5">
+                  <Text className={`font-inter-medium text-sm ${stat.color}`}>{stat.label}</Text>
+                  <Pressable className="z-5 ml-2 rounded-full bg-white p-2">
                     <Entypo name="export" size={18} color={stat.exportColor} />
                   </Pressable>
                 </View>
@@ -113,30 +113,30 @@ export default function DashboardScreen() {
         </View>
 
         <View className="gap-3">
-          <View className="bg-white rounded-2xl p-4">
-            <Text className="text-gray-950 font-inter-medium text-base mb-1">
+          <View className="rounded-2xl bg-white p-4">
+            <Text className="mb-1 font-inter-medium text-base text-gray-950">
               Laporan Belum Diperbarui
             </Text>
-            <Text className="text-gray-500 font-inter-regular text-sm mb-3">
+            <Text className="mb-3 font-inter-regular text-sm text-gray-500">
               Ada laporan yang belum diperbarui lebih dari 7 hari. Pastikan proses penanganan tetap
               berjalan agar tidak tertunda terlalu lama.
             </Text>
-            <Pressable className="bg-blue-50 rounded-xl py-2">
-              <Text className="text-[#2431AE] text-center font-inter-semi-bold text-sm">
+            <Pressable className="rounded-xl bg-blue-50 py-2">
+              <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
                 Lihat daftar laporan →
               </Text>
             </Pressable>
           </View>
 
-          <View className="bg-white rounded-2xl p-4">
-            <Text className="text-gray-950 font-inter-medium text-base mb-1">
+          <View className="rounded-2xl bg-white p-4">
+            <Text className="mb-1 font-inter-medium text-base text-gray-950">
               Tindakan Diperlukan
             </Text>
-            <Text className="text-gray-500 font-inter-regular text-sm mb-3">
+            <Text className="mb-3 font-inter-regular text-sm text-gray-500">
               3 laporan baru menunggu peninjauan hari ini
             </Text>
-            <Pressable className="bg-blue-50 rounded-xl py-2">
-              <Text className="text-[#2431AE] text-center font-inter-semi-bold text-sm">
+            <Pressable className="rounded-xl bg-blue-50 py-2">
+              <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
                 Tinjau sekarang →
               </Text>
             </Pressable>
