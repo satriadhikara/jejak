@@ -51,7 +51,7 @@ export const createReportRoute = (
     const user = c.get("user")!;
     const { id } = c.req.valid("param");
 
-    const report = await deps.getUserReportById(user.id, id);
+    const report = await deps.getUserReportById(id, user.id);
 
     return c.json({
       data: report,
