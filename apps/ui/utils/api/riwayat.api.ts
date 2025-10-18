@@ -40,3 +40,26 @@ export const getUserReportById = async (
 
   return (await response.json()) as GetUserReportByIdResponse;
 };
+
+type GetStorageReadUrlResponse = {
+  url: string;
+};
+
+export const getStorageReadUrl = async (
+  cookie: string,
+  key: string
+): Promise<GetStorageReadUrlResponse> => {
+  const params = new URLSearchParams({ key });
+  const response = await fetch(`${API_BASE_URL}/api/storage?${params.toString()}`, {
+    method: 'GET',
+    headers: {
+      Cookie: cookie,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch storage read URL');
+  }
+
+  return (await response.json()) as GetStorageReadUrlResponse;
+};
