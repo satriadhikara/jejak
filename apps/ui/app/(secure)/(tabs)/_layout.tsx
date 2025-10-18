@@ -83,6 +83,9 @@ export default function Layout() {
         name="kamera"
         options={{
           title: '',
+          tabBarStyle: {
+            display: 'none',
+          },
           tabBarIcon: ({ focused }) => (
             <View
               style={{
