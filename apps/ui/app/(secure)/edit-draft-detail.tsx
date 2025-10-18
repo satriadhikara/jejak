@@ -113,7 +113,7 @@ export default function EditDraftDetail() {
   // Image picker handler
   const handlePickFromLibrary = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
       quality: 0.7,
       allowsMultipleSelection: true,
     });
@@ -137,7 +137,7 @@ export default function EditDraftDetail() {
 
     const result = await ImagePicker.launchCameraAsync({
       quality: 0.7,
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      mediaTypes: 'images',
     });
 
     if (!result.canceled && result.assets && result.assets.length > 0) {
