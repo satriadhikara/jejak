@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Card } from 'react-native-paper';
-import { Ionicons } from '@expo/vector-icons';
 import { Skeleton } from '../Skeleton';
 
 interface PointsCardProps {

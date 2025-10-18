@@ -1,5 +1,13 @@
 import React from 'react';
-import { View, Text, ScrollView, TouchableOpacity, Image, ToastAndroid } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  ToastAndroid,
+  Pressable,
+} from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { useAuthContext } from '@/lib/auth-context';
 import { router } from 'expo-router';
@@ -215,6 +223,11 @@ export default function Home() {
             rankings.map((user) => <RankingCard key={user.id} user={user} />)
           )}
         </View>
+        <Pressable
+          onPress={() => router.push('/(secure)/admin/dashboard')}
+          className="mb-20 ml-4 flex-row items-center gap-2">
+          <Text className="font-inter-semi-bold text-base text-[#3848F4]">Admin</Text>
+        </Pressable>
       </ScrollView>
     </View>
   );

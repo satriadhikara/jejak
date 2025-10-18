@@ -61,7 +61,6 @@ export const createReportRoute = (
   router.post("/", reportCreateBodyValidator, async (c) => {
     const user = c.get("user")!;
     const {
-      id,
       title,
       locationName,
       locationGeo,
@@ -73,9 +72,11 @@ export const createReportRoute = (
       statusHistory,
     } = c.req.valid("json");
 
+    const reportId = Bun.randomUUIDv7("base64url");
+
     const report = await deps.createReport({
+      reportId,
       userId: user.id,
-      reportId: id,
       title,
       locationName,
       locationGeo,

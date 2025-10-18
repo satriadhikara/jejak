@@ -47,21 +47,24 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
     status,
     statusHistory,
   }: CreateReportInput) => {
-    const result = await db.insert(report).values({
-      id: reportId,
-      reporterId: userId,
-      title,
-      locationName,
-      locationGeo,
-      damageCategory,
-      impactOfDamage,
-      description,
-      photosUrls,
-      status,
-      statusHistory,
-    });
+    const [reportData] = await db
+      .insert(report)
+      .values({
+        id: reportId,
+        reporterId: userId,
+        title,
+        locationName,
+        locationGeo,
+        damageCategory,
+        impactOfDamage,
+        description,
+        photosUrls,
+        status,
+        statusHistory,
+      })
+      .returning();
 
-    return result;
+    return reportData;
   };
 
   // const updateReportById = async({
