@@ -135,8 +135,8 @@ export default function LaporanAll() {
     console.log('Navigate to create report');
   };
 
-  const handleViewReportDetail = (id: string) => {
-    router.push(`/riwayat/${id}`);
+  const handleViewReportDetail = () => {
+    router.push(`/(secure)/admin/detailLaporan`);
   };
 
   return (
