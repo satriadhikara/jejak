@@ -127,7 +127,9 @@ export default function DashboardAdmin() {
               Ada laporan yang belum diperbarui lebih dari 7 hari. Pastikan proses penanganan tetap
               berjalan agar tidak tertunda terlalu lama.
             </Text>
-            <Pressable className="rounded-xl bg-blue-50 py-2">
+            <Pressable
+              className="rounded-xl bg-blue-50 py-2"
+              onPress={() => router.push('/(secure)/admin/laporanNotUpdated')}>
               <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
                 Lihat daftar laporan →
               </Text>
@@ -141,7 +143,9 @@ export default function DashboardAdmin() {
             <Text className="mb-3 font-inter-regular text-sm text-gray-500">
               3 laporan baru menunggu peninjauan hari ini
             </Text>
-            <Pressable className="rounded-xl bg-blue-50 py-2">
+            <Pressable
+              className="rounded-xl bg-blue-50 py-2"
+              onPress={() => router.push('/(secure)/admin/laporanJustEntered')}>
               <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
                 Tinjau sekarang →
               </Text>
