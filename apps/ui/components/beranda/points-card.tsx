@@ -1,6 +1,7 @@
 import { View, Text, TouchableOpacity, Image } from 'react-native';
 import { Card } from 'react-native-paper';
 import { Skeleton } from '../Skeleton';
+import { router } from 'expo-router';
 
 interface PointsCardProps {
   isPending: boolean;
@@ -31,7 +32,7 @@ const PointsCard = ({ isPending, points, onCreateReport }: PointsCardProps) => {
         </View>
         <TouchableOpacity
           className="items-center justify-center rounded-[50px] bg-[#EBF4FF] px-[18px] py-2.5"
-          onPress={onCreateReport}>
+          onPress={() => router.push('/(secure)/laporanReward')}>
           <Text className="font-inter-semi-bold text-sm text-[#2431AE]">Buat Laporan</Text>
         </TouchableOpacity>
       </Card.Content>
