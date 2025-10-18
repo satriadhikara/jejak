@@ -18,7 +18,7 @@ const reportGetQuerySchema = z.object({
 });
 
 const reportGetParamsSchema = z.object({
-  id: z.uuidv7(),
+  id: z.string(),
 });
 
 const reportCreateBodySchema = z.object({
