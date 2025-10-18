@@ -40,8 +40,6 @@ export const createReportRoute = (
     const user = c.get("user")!;
     const { draft } = c.req.valid("query");
 
-    console.log("draft", draft);
-
     const reports = await deps.getUserReports(user.id, draft ?? false);
 
     return c.json({
