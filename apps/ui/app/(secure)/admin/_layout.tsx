@@ -9,6 +9,8 @@ export default function StackLayout() {
       <Stack.Screen name="laporanNew" options={{ headerShown: false }} />
       <Stack.Screen name="laporanOnProccess" options={{ headerShown: false }} />
       <Stack.Screen name="laporanDone" options={{ headerShown: false }} />
+      <Stack.Screen name="laporanNotUpdated" options={{ headerShown: false }} />
+      <Stack.Screen name="laporanJustEntered" options={{ headerShown: false }} />
     </Stack>
   );
 }
