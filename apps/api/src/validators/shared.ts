@@ -1,7 +1,7 @@
 import { HTTPException } from "hono/http-exception";
 import type { Hook } from "@hono/zod-validator";
 import type { Env, ValidationTargets } from "hono";
-import { z } from "zod";
+import * as z from "zod";
 
 export type ValidationIssue = {
   code: string;
