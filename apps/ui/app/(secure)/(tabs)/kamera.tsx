@@ -1,10 +1,11 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ActivityIndicator, Linking, Pressable, Text, View } from 'react-native';
+import { ActivityIndicator, Alert, Linking, Pressable, Text, View } from 'react-native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions, type CameraType, type FlashMode } from 'expo-camera';
+import * as ImagePicker from 'expo-image-picker';
 
 const FLASH_SEQUENCE: FlashMode[] = ['off', 'on', 'auto'];
 
@@ -66,6 +67,48 @@ export default function Kamera() {
       console.warn('Failed to take picture', error);
     } finally {
       setIsCapturing(false);
+    }
+  };
+
+  const handlePickFromGallery = async () => {
+    try {
+      const permission = await ImagePicker.getMediaLibraryPermissionsAsync();
+      let status = permission.status;
+
+      if (status !== 'granted') {
+        const requestResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        status = requestResult.status;
+      }
+
+      if (status !== 'granted') {
+        Alert.alert(
+          'Izin Galeri Diperlukan',
+          'Aktifkan akses galeri agar kamu bisa memilih dokumentasi dari penyimpanan perangkat.'
+        );
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        allowsMultipleSelection: true,
+        selectionLimit: 5,
+        quality: 0.7,
+      });
+
+      if (!result.canceled && result.assets?.length) {
+        const uris = result.assets.map((asset) => asset.uri).filter(Boolean);
+        if (uris.length) {
+          router.push({
+            pathname: '/edit-draft-detail',
+            params: {
+              imageUris: JSON.stringify(uris),
+            },
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to pick images', error);
+      Alert.alert('Galeri tidak dapat dibuka', 'Coba lagi dalam beberapa saat.');
     }
   };
 
@@ -175,8 +218,15 @@ export default function Kamera() {
           </Pressable>
         </View>
 
-        <Text className="mt-5 text-center text-sm text-gray-400">
-          Foto akan langsung dibawa ke halaman berikutnya setelah berhasil diambil.
+        <Pressable
+          className="mt-6 flex-row items-center justify-center rounded-full border border-white/20 px-5 py-3"
+          onPress={handlePickFromGallery}>
+          <Ionicons name="images-outline" size={18} color="#ffffff" />
+          <Text className="ml-2 text-sm font-medium text-white">Pilih dari galeri</Text>
+        </Pressable>
+
+        <Text className="mt-4 text-center text-xs text-gray-500">
+          Foto yang diambil atau dipilih akan langsung dialihkan ke halaman detail laporan.
         </Text>
       </View>
     </SafeAreaView>
