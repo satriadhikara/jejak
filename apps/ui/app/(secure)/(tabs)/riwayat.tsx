@@ -117,8 +117,8 @@ export default function RiwayatScreen() {
 
   const handleViewReportDetail = (reportId: string) => {
     router.push({
-      pathname: '/riwayat-detail',
-      params: { id: reportId },
+      pathname: '/riwayat/[riwayatId]',
+      params: { riwayatId: reportId },
     });
   };
 

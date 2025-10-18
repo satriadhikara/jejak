@@ -9,7 +9,7 @@ export const getUserReports = async (
   cookie: string,
   draft: boolean
 ): Promise<GetUserReportsResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/report?draft=${draft}`, {
+  const response = await fetch(`${API_BASE_URL}/api/reports?draft=${draft}`, {
     method: 'GET',
     headers: {
       Cookie: cookie,
@@ -27,7 +27,7 @@ export const getUserReportById = async (
   cookie: string,
   id: string
 ): Promise<GetUserReportByIdResponse> => {
-  const response = await fetch(`${API_BASE_URL}/api/report/${id}`, {
+  const response = await fetch(`${API_BASE_URL}/api/reports/${id}`, {
     method: 'GET',
     headers: {
       Cookie: cookie,

@@ -4,15 +4,24 @@ import { zValidator } from "@hono/zod-validator";
 // import { formatValidationResult } from "@/validators/shared";
 
 const reportGetQuerySchema = z.object({
-  draft: z.boolean().optional(),
+  draft: z
+    .preprocess((value) => {
+      if (typeof value === "string") {
+        if (value.toLowerCase() === "true") return true;
+        if (value.toLowerCase() === "false") return false;
+      }
+
+      return value;
+    }, z.boolean())
+    .optional()
+    .default(false),
 });
 
 const reportGetParamsSchema = z.object({
-  id: z.uuidv7(),
+  id: z.string(),
 });
 
 const reportCreateBodySchema = z.object({
-  id: z.uuidv7(),
   title: z.string().min(1),
   locationName: z.string().min(1),
   locationGeo: z.object({
