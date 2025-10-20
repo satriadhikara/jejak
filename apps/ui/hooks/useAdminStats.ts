@@ -6,6 +6,8 @@ export type AdminStats = {
   laporanBaru: number;
   dalamProses: number;
   selesai: number;
+  laporanBaruHariIni: number;
+  laporanTidakDiperbarui: number;
 };
 
 export const useAdminStats = () => {

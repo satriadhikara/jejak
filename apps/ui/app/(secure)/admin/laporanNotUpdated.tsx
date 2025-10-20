@@ -1,58 +1,45 @@
-import React, { useMemo, useState } from 'react';
-import { View, Text, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import React, { useMemo } from 'react';
+import { View, Text, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import EmptyReportHistory from '@/components/beranda/empty-report-histoy';
 import ReportCard from '@/components/admin/report-card';
 import { ReportHistoryItem } from '@/utils/types/beranda.types';
 import { useRouter } from 'expo-router';
+import { useAuthContext } from '@/lib/auth-context';
+import { useQuery } from '@tanstack/react-query';
+import { getStaleReports } from '@/utils/api/admin.api';
+import type { AdminReport } from '@/utils/types/admin.types';
+import { Skeleton } from '@/components/Skeleton';
 
-const MOCK_REPORTS = [
-  {
-    id: '1',
-    title: 'Kerusakan Trotoar ITB Ganesha',
-    createdAt: '2025-10-03T10:00:00Z',
-    locationName: 'Jl. Ganesa No.10, Lb. Siliwangi',
-    reporterName: 'Sarah Mahendra',
-    reporterImage: 'https://i.pravatar.cc/150?img=47',
-    severity: 'Ringan',
-  },
-  {
-    id: '2',
-    title: 'Lampu Lalu Lintas Mati',
-    createdAt: '2025-09-25T09:00:00Z',
-    locationName: 'Jl. Sudirman',
-    reporterName: 'Dimas Wiratama',
-    reporterImage: 'https://i.pravatar.cc/150?img=22',
-    severity: 'Sedang',
-  },
-  {
-    id: '3',
-    title: 'Pohon Tumbang Menutupi Jalan',
-    createdAt: '2025-09-20T16:00:00Z',
-    locationName: 'Jl. Ahmad Yani',
-    reporterName: 'Ayu Pertiwi',
-    reporterImage: 'https://i.pravatar.cc/150?img=12',
-    severity: 'Berat',
-  },
-  {
-    id: '4',
-    title: 'Sampah Menumpuk di Trotoar',
-    createdAt: '2025-09-18T07:00:00Z',
-    locationName: 'Jl. Kebon Jeruk',
-    reporterName: 'Rudi Santoso',
-    reporterImage: 'https://i.pravatar.cc/150?img=40',
-    severity: 'Ringan',
-  },
-];
+type StatusDisplayConfig = {
+  label: string;
+  color: string;
+  bgColor: string;
+};
 
-const STATUS_DISPLAY = {
+const STATUS_DISPLAY: StatusDisplayConfig = {
   label: 'Dalam penanganan',
   color: '#9D530E',
   bgColor: '#FFFBED',
 };
 
+const SEVERITY_DISPLAY: Record<AdminReport['damageCategory'], 'Ringan' | 'Sedang' | 'Berat'> = {
+  berat: 'Berat',
+  sedang: 'Sedang',
+  ringan: 'Ringan',
+};
+
 const formatReportDate = (isoString: string) => {
+  if (!isoString) {
+    return '-';
+  }
+
   const parsedDate = new Date(isoString);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return '-';
+  }
+
   return parsedDate.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -60,29 +47,49 @@ const formatReportDate = (isoString: string) => {
   });
 };
 
-export default function LaporanOnProccess() {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+const mapAdminReportToHistoryItem = (report: AdminReport): ReportHistoryItem => {
+  return {
+    id: report.id,
+    title: report.title,
+    date: formatReportDate(report.createdAt),
+    location: report.locationName,
+    status: STATUS_DISPLAY.label,
+    statusColor: STATUS_DISPLAY.color,
+    statusBgColor: STATUS_DISPLAY.bgColor,
+    reporterName: report.reporterName,
+    reporterImage: report.reporterImage ?? undefined,
+    severity: SEVERITY_DISPLAY[report.damageCategory],
+  };
+};
 
-  const mappedReports: ReportHistoryItem[] = useMemo(
-    () =>
-      MOCK_REPORTS.map((report) => ({
-        id: report.id,
-        title: report.title,
-        date: formatReportDate(report.createdAt),
-        location: report.locationName,
-        status: STATUS_DISPLAY.label,
-        statusColor: STATUS_DISPLAY.color,
-        statusBgColor: STATUS_DISPLAY.bgColor,
-        reporterName: report.reporterName,
-        reporterImage: report.reporterImage,
-        severity: report.severity,
-      })),
-    []
-  );
+export default function LaporanNotUpdated() {
+  const router = useRouter();
+  const { cookies } = useAuthContext();
+
+  const staleReportsQuery = useQuery<Awaited<ReturnType<typeof getStaleReports>>>({
+    queryKey: ['adminStaleReports', cookies],
+    queryFn: () => getStaleReports(cookies),
+    enabled: Boolean(cookies),
+  });
+
+  const isLoadingReports = staleReportsQuery.isPending;
+  const isErrorReports = staleReportsQuery.isError;
+  const errorMessage =
+    staleReportsQuery.error instanceof Error
+      ? staleReportsQuery.error.message
+      : 'Terjadi kesalahan saat memuat laporan yang belum diperbarui.';
+
+  const reports = useMemo(() => {
+    const allReports = staleReportsQuery.data?.data ?? [];
+    return allReports.map(mapAdminReportToHistoryItem);
+  }, [staleReportsQuery.data]);
+
+  const handleCreateReport = () => {
+    console.log('Navigate to create report');
+  };
 
   const handleViewReportDetail = (id: string) => {
-    router.push(`/riwayat/${id}`);
+    router.push(`/(secure)/admin/report/${id}`);
   };
 
   return (
@@ -112,17 +119,35 @@ export default function LaporanOnProccess() {
 
       {/* Content */}
       <View className="flex-1 pb-14">
-        {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="small" color="#1859F8" />
+        {isLoadingReports ? (
+          <ScrollView
+            className="px-5"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}>
+            {/* Skeleton loading cards */}
+            {[1, 2, 3].map((i) => (
+              <View key={i} className="mt-3 rounded-xl border border-[#E5E6E8] bg-white p-4">
+                <View className="gap-2">
+                  <Skeleton width="70%" height={16} />
+                  <Skeleton width="90%" height={12} />
+                  <Skeleton width="60%" height={12} />
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        ) : isErrorReports ? (
+          <View className="mb-28 flex-1 items-center justify-center px-5">
+            <Text className="text-center font-inter-medium text-sm text-[#B42318]">
+              {errorMessage}
+            </Text>
           </View>
         ) : (
           <ScrollView
             className="px-5"
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}>
-            {mappedReports.length > 0 ? (
-              mappedReports.map((report) => (
+            {reports.length > 0 ? (
+              reports.map((report) => (
                 <ReportCard
                   key={report.id}
                   report={report}
@@ -132,7 +157,7 @@ export default function LaporanOnProccess() {
               ))
             ) : (
               <View className="mb-28 flex-1 items-center justify-center">
-                <EmptyReportHistory handleCreateReport={() => {}} />
+                <EmptyReportHistory handleCreateReport={handleCreateReport} />
               </View>
             )}
           </ScrollView>

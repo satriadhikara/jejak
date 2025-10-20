@@ -31,4 +31,7 @@ export interface ReportHistoryItem {
   status: string;
   statusColor: string;
   statusBgColor: string;
+  reporterName?: string;
+  reporterImage?: string;
+  severity?: 'Ringan' | 'Sedang' | 'Berat';
 }
