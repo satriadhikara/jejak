@@ -52,7 +52,7 @@ export default function Profil() {
                 icon="person-outline"
                 label="Edit Profil"
                 color="#6B5AED"
-                onPress={() => router.push('/edit-profil')}
+                onPress={() => router.push('/(secure)/edit-profil')}
               />
               <MenuItem
                 icon="document-text-outline"

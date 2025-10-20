@@ -3,10 +3,12 @@ import { View, Text, TextInput, Image, ScrollView, Pressable } from 'react-nativ
 import { Ionicons } from '@expo/vector-icons';
 import Entypo from '@expo/vector-icons/Entypo';
 import { useRouter } from 'expo-router';
+import { useAuthContext } from '@/lib/auth-context';
+import { useAdminStats } from '@/hooks/useAdminStats';
 
-const dashboardStats = [
+const dashboardStatsConfig = [
   {
-    value: 216,
+    key: 'totalLaporan',
     label: 'Total Laporan',
     color: 'text-gray-700',
     bg: 'bg-gray-50',
@@ -15,7 +17,7 @@ const dashboardStats = [
     navigateTo: '/(secure)/admin/laporanAll',
   },
   {
-    value: 23,
+    key: 'laporanBaru',
     label: 'Laporan Baru',
     color: 'text-[#2431AE]',
     bg: 'bg-[#EBF4FF]',
@@ -24,7 +26,7 @@ const dashboardStats = [
     navigateTo: '/(secure)/admin/laporanNew',
   },
   {
-    value: 72,
+    key: 'dalamProses',
     label: 'Dalam Proses',
     color: 'text-[#F79008]',
     bg: 'bg-[#FFFDF6]',
@@ -33,7 +35,7 @@ const dashboardStats = [
     navigateTo: '/(secure)/admin/laporanOnProccess',
   },
   {
-    value: 121,
+    key: 'selesai',
     label: 'Selesai',
     color: 'text-[#12B76A]',
     bg: 'bg-[#F5FFFB]',
@@ -45,6 +47,8 @@ const dashboardStats = [
 
 export default function DashboardAdmin() {
   const router = useRouter();
+  const { session } = useAuthContext();
+  const { stats, isLoading } = useAdminStats();
 
   return (
     <View className="relative flex-1 bg-transparent">
@@ -68,14 +72,16 @@ export default function DashboardAdmin() {
               numberOfLines={1}
               ellipsizeMode="tail"
               style={{ flexShrink: 1, minWidth: 0 }}>
-              Budi
+              {session.user.name}
             </Text>
             <Text className="font-inter-semi-bold text-lg text-white">!👋</Text>
           </View>
           <Pressable
             className="h-10 w-10 items-center justify-center rounded-full bg-white/30"
             onPress={() => router.push('/admin/profil')}>
-            <Text className="font-semibold text-white">BS</Text>
+            <Text className="font-semibold text-white">
+              {session.user.name.substring(0, 2).toUpperCase()}
+            </Text>
           </Pressable>
         </View>
 
@@ -93,28 +99,31 @@ export default function DashboardAdmin() {
         <View className="mb-3 rounded-2xl bg-white p-4">
           <Text className="mb-3 font-inter-medium text-base text-black">Ringkasan Hari Ini</Text>
           <View className="flex-row flex-wrap justify-between">
-            {dashboardStats.map((stat, idx) => (
-              <View
-                key={stat.label}
-                className={`w-[48%] ${stat.bg} rounded-xl ${idx < 2 ? 'p-6' : 'p-4'} relative mb-3 overflow-hidden`}>
-                <Image
-                  source={stat.image}
-                  className="absolute bottom-0 right-0 h-32 w-44"
-                  resizeMode="cover"
-                />
-                <Text className={`mb-1 font-inter-semi-bold text-3xl ${stat.color}`}>
-                  {stat.value}
-                </Text>
-                <View className="flex-row items-center justify-between">
-                  <Text className={`font-inter-medium text-sm ${stat.color}`}>{stat.label}</Text>
-                  <Pressable
-                    className="z-5 ml-2 rounded-full bg-white p-2"
-                    onPress={() => stat.navigateTo && router.push(stat.navigateTo as any)}>
-                    <Entypo name="export" size={18} color={stat.exportColor} />
-                  </Pressable>
+            {dashboardStatsConfig.map((stat, idx) => {
+              const value = stats?.[stat.key as keyof typeof stats] || 0;
+              return (
+                <View
+                  key={stat.label}
+                  className={`w-[48%] ${stat.bg} rounded-xl ${idx < 2 ? 'p-6' : 'p-4'} relative mb-3 overflow-hidden`}>
+                  <Image
+                    source={stat.image}
+                    className="absolute bottom-0 right-0 h-32 w-44"
+                    resizeMode="cover"
+                  />
+                  <Text className={`mb-1 font-inter-semi-bold text-3xl ${stat.color}`}>
+                    {isLoading ? '...' : value}
+                  </Text>
+                  <View className="flex-row items-center justify-between">
+                    <Text className={`font-inter-medium text-sm ${stat.color}`}>{stat.label}</Text>
+                    <Pressable
+                      className="z-5 ml-2 rounded-full bg-white p-2"
+                      onPress={() => stat.navigateTo && router.push(stat.navigateTo as any)}>
+                      <Entypo name="export" size={18} color={stat.exportColor} />
+                    </Pressable>
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </View>
 
@@ -141,7 +150,7 @@ export default function DashboardAdmin() {
               Tindakan Diperlukan
             </Text>
             <Text className="mb-3 font-inter-regular text-sm text-gray-500">
-              3 laporan baru menunggu peninjauan hari ini
+              {stats?.laporanBaru || 0} laporan baru menunggu peninjauan hari ini
             </Text>
             <Pressable
               className="rounded-xl bg-blue-50 py-2"

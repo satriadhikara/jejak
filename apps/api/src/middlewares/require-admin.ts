@@ -1,7 +1,7 @@
 import { createMiddleware } from "hono/factory";
 import type { AuthContextVariables } from "@/lib/auth";
 
-export const requireAuth = createMiddleware<{
+export const requireAdmin = createMiddleware<{
   Variables: AuthContextVariables;
 }>(async (c, next) => {
   const user = c.get("user");
@@ -11,7 +11,7 @@ export const requireAuth = createMiddleware<{
   }
 
   if (user.role !== "admin") {
-    return c.json({ error: "Forbidden" }, 403);
+    return c.json({ error: "Forbidden: Admin access required" }, 403);
   }
 
   await next();
