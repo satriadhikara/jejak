@@ -8,14 +8,13 @@ import { useRouter } from 'expo-router';
 import { signOut } from '@/lib/auth-client';
 
 export default function Profil() {
-  const session = useAuthContext();
+  const { session, role } = useAuthContext();
   const router = useRouter();
 
   const userData = {
-    name: session?.session?.user?.name,
-    email: session?.session?.user?.email,
-    avatar:
-      session?.session?.user?.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
+    name: session?.user?.name,
+    email: session?.user?.email,
+    avatar: session?.user?.image || 'https://cdn-icons-png.flaticon.com/512/149/149071.png',
   };
 
   return (
@@ -53,7 +52,7 @@ export default function Profil() {
                 icon="person-outline"
                 label="Edit Profil"
                 color="#6B5AED"
-                onPress={() => router.push('/edit-profil')}
+                onPress={() => router.push('/(secure)/edit-profil')}
               />
               <MenuItem
                 icon="document-text-outline"
@@ -61,6 +60,14 @@ export default function Profil() {
                 color="#6B5AED"
                 onPress={() => {}}
               />
+              {role === 'admin' && (
+                <MenuItem
+                  icon="shield-checkmark-outline"
+                  label="Admin Panel"
+                  color="#6B5AED"
+                  onPress={() => router.push('/(secure)/admin/dashboard')}
+                />
+              )}
               <MenuItem
                 icon="settings-outline"
                 label="Pengaturan"

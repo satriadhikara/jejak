@@ -3,11 +3,13 @@ import { getCookie, useSession } from '@/lib/auth-client';
 import { View, Text } from 'react-native';
 import { AuthProvider } from '@/lib/auth-context';
 import { LocationProvider } from '@/lib/location-context';
+import { useUserRole } from '@/hooks/useUserRole';
 
 export default function Layout() {
   const { data: session, isPending, error } = useSession();
+  const { role, isLoading: isRoleLoading } = useUserRole();
 
-  if (isPending) {
+  if (isPending || isRoleLoading) {
     return null;
   }
 
@@ -27,7 +29,7 @@ export default function Layout() {
   const cookies = getCookie();
 
   return (
-    <AuthProvider session={session} cookies={cookies}>
+    <AuthProvider session={session} cookies={cookies} role={role}>
       <LocationProvider>
         <Stack screenOptions={{ headerShown: false }} />
       </LocationProvider>
