@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import { getAdminReportById, completeReport } from '@/utils/api/admin.api';
 import { getStorageUploadUrl } from '@/utils/api/riwayat.api';
 
 export default function LaporanComplete() {
-  const params = useLocalSearchParams();
+  const { reportId } = useLocalSearchParams();
   const router = useRouter();
   const { cookies } = useAuthContext();
   const queryClient = useQueryClient();
@@ -34,10 +34,9 @@ export default function LaporanComplete() {
   const [showConfirmModal, setShowConfirmModal] = useState(false);
 
   const reportIdString = useMemo(() => {
-    const id = params.reportId;
-    if (!id) return null;
-    return Array.isArray(id) ? id[0] : id;
-  }, [params.reportId]);
+    if (!reportId) return null;
+    return Array.isArray(reportId) ? reportId[0] : reportId;
+  }, [reportId]);
 
   // Fetch report details to show title
   const reportQuery = useQuery({
@@ -49,13 +48,12 @@ export default function LaporanComplete() {
   const report = reportQuery.data?.data ?? null;
 
   // Track dirty state
-  useEffect(() => {
+  React.useEffect(() => {
     setIsDirty(
       handlingDescription.trim().length > 0 || notes.trim().length > 0 || imageUris.length > 0
     );
   }, [handlingDescription, notes, imageUris]);
 
-  // Image picker handler
   const handlePickImage = async () => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
