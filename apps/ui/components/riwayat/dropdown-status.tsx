@@ -54,7 +54,13 @@ export default function DropdownStatus({
     };
 
     return [...statusHistory]
-      .sort((a, b) => toTimestamp(b.timestamp) - toTimestamp(a.timestamp))
+      .sort((a, b) => {
+        // Active status should come first
+        if (a.status === currentStatus) return -1;
+        if (b.status === currentStatus) return 1;
+        // Then sort by timestamp descending (most recent first)
+        return toTimestamp(b.timestamp) - toTimestamp(a.timestamp);
+      })
       .map((item) => ({
         title: STATUS_LABEL[item.status] ?? item.status,
         desc: item.description,
