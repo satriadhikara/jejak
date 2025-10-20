@@ -5,6 +5,11 @@ export default {
     version: '1.0.0',
     scheme: 'jejak',
     platforms: ['ios', 'android'],
+    extra: {
+      eas: {
+        projectId: '86756375-a4d7-442d-ac74-04f21706453a',
+      },
+    },
     web: {
       bundler: 'metro',
       output: 'static',
