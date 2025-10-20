@@ -36,6 +36,125 @@ export default function Pindai() {
   const [analysisResult, setAnalysisResult] = useState<AnalyzeSuccessResponse | null>(null);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
   const analysisAbortController = useRef<AbortController | null>(null);
+  const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const pendingCameraUpdate = useRef<any>(null);
+  const lastAppliedCameraConfig = useRef<any>(null);
+
+  const cameraConfigsAreEqual = useCallback((first: any, second: any) => {
+    if (!first || !second) {
+      return false;
+    }
+
+    const firstCoordinates = first.coordinates;
+    const secondCoordinates = second.coordinates;
+
+    const coordinatesMatch =
+      firstCoordinates &&
+      secondCoordinates &&
+      firstCoordinates.latitude === secondCoordinates.latitude &&
+      firstCoordinates.longitude === secondCoordinates.longitude;
+
+    return (
+      coordinatesMatch &&
+      first.zoom === second.zoom &&
+      first.tilt === second.tilt &&
+      first.bearing === second.bearing
+    );
+  }, []);
+
+  const isCameraAnimationCancellation = (error: unknown): boolean => {
+    const containsCancellation = (value: unknown): boolean => {
+      if (!value) {
+        return false;
+      }
+
+      if (typeof value === 'string') {
+        return value.toLowerCase().includes('cancel');
+      }
+
+      if (typeof value === 'object') {
+        const objectValue = value as { message?: unknown; cause?: unknown };
+        if (containsCancellation(objectValue.message)) {
+          return true;
+        }
+        if (containsCancellation(objectValue.cause)) {
+          return true;
+        }
+      }
+
+      return String(value).toLowerCase().includes('cancel');
+    };
+
+    return containsCancellation(error);
+  };
+
+  const applyCameraPosition = useCallback((config: any) => {
+    if (!mapRef.current) {
+      pendingCameraUpdate.current = config;
+      return;
+    }
+
+    try {
+      const maybePromise = mapRef.current.setCameraPosition(config);
+
+      if (
+        maybePromise &&
+        typeof maybePromise === 'object' &&
+        typeof (maybePromise as Promise<void>).then === 'function' &&
+        typeof (maybePromise as Promise<void>).catch === 'function'
+      ) {
+        (maybePromise as Promise<void>).catch((error: unknown) => {
+          if (isCameraAnimationCancellation(error)) {
+            return;
+          }
+          console.error('Failed to set camera position:', error);
+        });
+      }
+
+      lastAppliedCameraConfig.current = config;
+    } catch (error) {
+      if (isCameraAnimationCancellation(error)) {
+        return;
+      }
+      console.error('Failed to set camera position:', error);
+    }
+  }, []);
+
+  const flushPendingCameraUpdate = useCallback(() => {
+    if (!isMapLoaded || !mapRef.current || !pendingCameraUpdate.current) {
+      return;
+    }
+
+    const config = pendingCameraUpdate.current;
+    pendingCameraUpdate.current = null;
+    applyCameraPosition(config);
+  }, [applyCameraPosition, isMapLoaded]);
+
+  const setCameraPositionSafely = useCallback(
+    (config: any) => {
+      const normalizedConfig = {
+        ...config,
+        animationDuration: config?.animationDuration ?? 0,
+      };
+
+      if (
+        (pendingCameraUpdate.current &&
+          cameraConfigsAreEqual(pendingCameraUpdate.current, normalizedConfig)) ||
+        (lastAppliedCameraConfig.current &&
+          cameraConfigsAreEqual(lastAppliedCameraConfig.current, normalizedConfig))
+      ) {
+        return;
+      }
+
+      pendingCameraUpdate.current = normalizedConfig;
+      flushPendingCameraUpdate();
+    },
+    [cameraConfigsAreEqual, flushPendingCameraUpdate]
+  );
+
+  useEffect(() => {
+    flushPendingCameraUpdate();
+  }, [flushPendingCameraUpdate]);
 
   // Check and request location permission when component mounts
   useEffect(() => {
@@ -113,20 +232,6 @@ export default function Pindai() {
     retry: 1,
   });
 
-  // Move camera to user location when it's first fetched
-  useEffect(() => {
-    if (userLocation && mapRef.current) {
-      mapRef.current.setCameraPosition({
-        coordinates: {
-          latitude: userLocation.latitude,
-          longitude: userLocation.longitude,
-        },
-        zoom: 17,
-        animationDuration: 500,
-      });
-    }
-  }, [userLocation]);
-
   const handleCurrentLocation = async () => {
     // Check if permission is already granted
     if (hasLocationPermission !== true) {
@@ -147,16 +252,13 @@ export default function Pindai() {
     }
 
     // Move camera to the freshest known user location
-    if (mapRef.current) {
-      mapRef.current.setCameraPosition({
-        coordinates: {
-          latitude: coordinates.latitude,
-          longitude: coordinates.longitude,
-        },
-        zoom: 17,
-        animationDuration: 300,
-      });
-    }
+    setCameraPositionSafely({
+      coordinates: {
+        latitude: coordinates.latitude,
+        longitude: coordinates.longitude,
+      },
+      zoom: 17,
+    });
   };
 
   const handleOriginPress = () => {
@@ -180,54 +282,6 @@ export default function Pindai() {
     } else {
       setSelectedDestination(location);
     }
-
-    // Move map camera to show both markers if both are selected
-    if (mapRef.current) {
-      const origin = searchMode === 'origin' ? location : selectedOrigin;
-      const destination = searchMode === 'destination' ? location : selectedDestination;
-
-      if (origin && destination) {
-        // Calculate bounds to fit both markers
-        const minLat = Math.min(origin.latitude, destination.latitude);
-        const maxLat = Math.max(origin.latitude, destination.latitude);
-        const minLng = Math.min(origin.longitude, destination.longitude);
-        const maxLng = Math.max(origin.longitude, destination.longitude);
-
-        const centerLat = (minLat + maxLat) / 2;
-        const centerLng = (minLng + maxLng) / 2;
-
-        // Calculate appropriate zoom level based on distance
-        const latDiff = maxLat - minLat;
-        const lngDiff = maxLng - minLng;
-        const maxDiff = Math.max(latDiff, lngDiff);
-
-        // Rough zoom calculation (adjust as needed)
-        let zoom = 15;
-        if (maxDiff > 0.1) zoom = 13;
-        else if (maxDiff > 0.05) zoom = 14;
-        else if (maxDiff > 0.02) zoom = 15;
-        else if (maxDiff > 0.01) zoom = 15;
-
-        mapRef.current.setCameraPosition({
-          coordinates: {
-            latitude: centerLat,
-            longitude: centerLng,
-          },
-          zoom: zoom,
-          animationDuration: 500,
-        });
-      } else {
-        // Only one location selected, center on it
-        mapRef.current.setCameraPosition({
-          coordinates: {
-            latitude: location.latitude,
-            longitude: location.longitude,
-          },
-          zoom: 17,
-          animationDuration: 500,
-        });
-      }
-    }
   };
 
   useEffect(() => {
@@ -240,6 +294,54 @@ export default function Pindai() {
       setIsResultModalVisible(false);
     }
   }, [selectedOrigin, selectedDestination]);
+
+  useEffect(() => {
+    if (!selectedOrigin && !selectedDestination) {
+      return;
+    }
+
+    if (selectedOrigin && selectedDestination) {
+      const minLat = Math.min(selectedOrigin.latitude, selectedDestination.latitude);
+      const maxLat = Math.max(selectedOrigin.latitude, selectedDestination.latitude);
+      const minLng = Math.min(selectedOrigin.longitude, selectedDestination.longitude);
+      const maxLng = Math.max(selectedOrigin.longitude, selectedDestination.longitude);
+
+      const centerLat = (minLat + maxLat) / 2;
+      const centerLng = (minLng + maxLng) / 2;
+
+      const latDiff = maxLat - minLat;
+      const lngDiff = maxLng - minLng;
+      const maxDiff = Math.max(latDiff, lngDiff);
+
+      let zoom = 15;
+      if (maxDiff > 0.1) zoom = 13;
+      else if (maxDiff > 0.05) zoom = 14;
+      else if (maxDiff > 0.02) zoom = 15;
+      else if (maxDiff > 0.01) zoom = 15;
+
+      setCameraPositionSafely({
+        coordinates: {
+          latitude: centerLat,
+          longitude: centerLng,
+        },
+        zoom,
+      });
+      return;
+    }
+
+    const singleLocation = selectedOrigin ?? selectedDestination;
+    if (!singleLocation) {
+      return;
+    }
+
+    setCameraPositionSafely({
+      coordinates: {
+        latitude: singleLocation.latitude,
+        longitude: singleLocation.longitude,
+      },
+      zoom: 17,
+    });
+  }, [selectedDestination, selectedOrigin, setCameraPositionSafely]);
 
   const runAnalysis = useCallback(() => {
     if (!selectedOrigin || !selectedDestination || !routeData) {
@@ -371,6 +473,8 @@ export default function Pindai() {
     return () => {
       analysisAbortController.current?.abort();
       analysisAbortController.current = null;
+      pendingCameraUpdate.current = null;
+      lastAppliedCameraConfig.current = null;
     };
   }, []);
 
@@ -421,6 +525,7 @@ export default function Pindai() {
           coordinates: userLocation,
           followUserLocation: false,
         }}
+        onMapLoaded={() => setIsMapLoaded(true)}
         markers={[
           ...(selectedOrigin
             ? [
