@@ -96,7 +96,7 @@ export default function LaporanNew() {
   );
 
   const handleViewReportDetail = (id: string) => {
-    router.push(`/riwayat/${id}`);
+    router.push(`/(secure)/admin/report/${id}`);
   };
 
   return (
