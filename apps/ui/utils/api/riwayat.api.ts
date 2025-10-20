@@ -8,6 +8,7 @@ import type {
   StatusHistoryEntry,
   UpdateReportPayload,
   UserReport,
+  GetNearbyCompletedReportsResponse,
 } from '@/utils/types/riwayat.types';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -156,4 +157,71 @@ export const updateReport = async (
   }
 
   return (await response.json()) as UpdateReportResponse;
+};
+
+export const getNearbyCompletedReports = async (
+  cookie: string,
+  bounds: { minLat: number; maxLat: number; minLng: number; maxLng: number }
+): Promise<GetNearbyCompletedReportsResponse> => {
+  const params = new URLSearchParams({
+    minLat: bounds.minLat.toString(),
+    maxLat: bounds.maxLat.toString(),
+    minLng: bounds.minLng.toString(),
+    maxLng: bounds.maxLng.toString(),
+  });
+
+  const url = `${API_BASE_URL}/api/reports/nearby/completed?${params}`;
+  console.log('Fetching nearby reports from:', url);
+  console.log('Bounds:', bounds);
+
+  const response = await fetch(url, {
+    method: 'GET',
+    headers: {
+      Cookie: cookie,
+    },
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    console.error('Failed to fetch nearby completed reports:', response.status, errorText);
+    throw new Error('Failed to fetch nearby completed reports');
+  }
+
+  const data = (await response.json()) as GetNearbyCompletedReportsResponse;
+  console.log('Received nearby reports:', data);
+  return data;
+};
+
+export type ImageAnalysisResult = {
+  title: string;
+  damageCategory: DamageCategory;
+  hasImpact: boolean;
+  impactDescription?: string;
+  notes?: string;
+};
+
+type AnalyzeImageResponse = {
+  data: ImageAnalysisResult;
+};
+
+export const analyzeReportImage = async (
+  cookie: string,
+  imageData: string,
+  mimeType: string
+): Promise<ImageAnalysisResult> => {
+  const response = await fetch(`${API_BASE_URL}/api/reports/analyze-image`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookie,
+    },
+    body: JSON.stringify({ imageData, mimeType }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to analyze image');
+  }
+
+  const result = (await response.json()) as AnalyzeImageResponse;
+  return result.data;
 };

@@ -102,6 +102,14 @@ export const getAllReports = async () => {
       })
       .from(report)
       .innerJoin(user, eq(report.reporterId, user.id))
+      .where(
+        inArray(report.status, [
+          "diperiksa",
+          "dikonfirmasi",
+          "dalam_penanganan",
+          "selesai",
+        ]),
+      )
       .orderBy(desc(report.createdAt));
 
     return reports;

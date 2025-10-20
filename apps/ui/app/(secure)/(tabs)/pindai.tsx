@@ -1,8 +1,9 @@
-import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { Text, View, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { GoogleMaps } from 'expo-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as Location from 'expo-location';
+import { useQuery } from '@tanstack/react-query';
 import ErrorComponent from '@/components/error';
 import LocationSearchBottomSheet from '@/components/location-search/LocationSearchBottomSheet';
 import AnalyzeResultBottomSheet from '@/components/analyze/AnalyzeResultBottomSheet';
@@ -13,6 +14,7 @@ import { useLocationPermission } from '@/hooks/useLocationPermission';
 import { useCameraManager } from '@/hooks/useCameraManager';
 import { useRouteAnalysis } from '@/hooks/useRouteAnalysis';
 import { useAuthContext } from '@/lib/auth-context';
+import { getNearbyCompletedReports } from '@/utils/api/riwayat.api';
 
 export default function Pindai() {
   const { cookies } = useAuthContext();
@@ -33,6 +35,12 @@ export default function Pindai() {
   } | null>(null);
   const [isResultModalVisible, setIsResultModalVisible] = useState(false);
   const [_isMapLoaded, setIsMapLoaded] = useState(false);
+  const [mapRegion, setMapRegion] = useState<{
+    minLat: number;
+    maxLat: number;
+    minLng: number;
+    maxLng: number;
+  } | null>(null);
 
   // Use custom hooks
   const hasLocationPermission = useLocationPermission();
@@ -48,12 +56,79 @@ export default function Pindai() {
     cleanup: cleanupAnalysis,
   } = useRouteAnalysis(selectedOrigin, selectedDestination, cookies);
 
+  // Fetch nearby completed reports
+  const nearbyReportsQuery = useQuery({
+    queryKey: ['nearbyCompletedReports', mapRegion, cookies],
+    queryFn: () =>
+      mapRegion && cookies
+        ? getNearbyCompletedReports(cookies, mapRegion)
+        : Promise.resolve({ data: [] }),
+    enabled: Boolean(mapRegion && cookies),
+    staleTime: 30000, // Cache for 30 seconds
+  });
+
+  // Debug: Log nearby reports data
+  useEffect(() => {
+    if (nearbyReportsQuery.data) {
+      console.log('Nearby reports count:', nearbyReportsQuery.data.data.length);
+      console.log('Nearby reports:', nearbyReportsQuery.data.data);
+    }
+    if (nearbyReportsQuery.error) {
+      console.error('Error fetching nearby reports:', nearbyReportsQuery.error);
+    }
+  }, [nearbyReportsQuery.data, nearbyReportsQuery.error]);
+
+  // Debug: Log map region
+  useEffect(() => {
+    if (mapRegion) {
+      console.log('Map region bounds:', mapRegion);
+    }
+  }, [mapRegion]);
+
   // Fetch user location on permission grant
   const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
     null
   );
   const [isLoadingLocation, setIsLoadingLocation] = useState(false);
   const [locationError, setLocationError] = useState<string | null>(null);
+
+  // Calculate map bounds from center coordinates and zoom level
+  const calculateMapBounds = useCallback(
+    (center: { latitude: number; longitude: number }, zoom: number) => {
+      // More accurate calculation based on Google Maps zoom levels
+      // At zoom level, the visible area at equator is approximately:
+      // Width (degrees) = 360 / (2^zoom)
+      // We adjust for latitude and add a reasonable visible area
+
+      // Calculate approximate degrees per pixel at this zoom level
+      // At zoom 0, the world is 256 pixels wide = 360 degrees
+      // Each zoom level doubles the pixels, halving the degrees per pixel
+      const scale = Math.pow(2, zoom);
+      const degreesPerTile = 360 / scale;
+
+      // Assuming typical mobile screen shows about 1.5-2 tiles
+      // Let's use a reasonable viewport size
+      const tilesVisible = 1.5;
+      const latDelta = (degreesPerTile * tilesVisible) / 2;
+
+      // Longitude adjustment for latitude (longitude lines converge at poles)
+      const lngDelta = latDelta / Math.cos((center.latitude * Math.PI) / 180);
+
+      const bounds = {
+        minLat: center.latitude - latDelta,
+        maxLat: center.latitude + latDelta,
+        minLng: Math.min(center.longitude - lngDelta, center.longitude + lngDelta),
+        maxLng: Math.max(center.longitude - lngDelta, center.longitude + lngDelta),
+      };
+
+      console.log('Calculated bounds:', bounds);
+      console.log('Center:', center, 'Zoom:', zoom);
+      console.log('Delta:', { latDelta, lngDelta });
+
+      setMapRegion(bounds);
+    },
+    []
+  );
 
   useEffect(() => {
     if (hasLocationPermission !== true) return;
@@ -64,11 +139,14 @@ export default function Pindai() {
         const location = await Location.getCurrentPositionAsync({
           accuracy: Location.Accuracy.High,
         });
-        setUserLocation({
+        const coords = {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
-        });
+        };
+        setUserLocation(coords);
         setLocationError(null);
+        // Calculate initial map bounds
+        calculateMapBounds(coords, 15);
       } catch (error) {
         console.error('Error fetching user location:', error);
         setLocationError('Failed to get your location');
@@ -78,7 +156,7 @@ export default function Pindai() {
     };
 
     fetchUserLocation();
-  }, [hasLocationPermission]);
+  }, [hasLocationPermission, calculateMapBounds]);
 
   const handleCurrentLocation = async () => {
     if (hasLocationPermission !== true) {
@@ -103,6 +181,8 @@ export default function Pindai() {
         coordinates,
         zoom: 17,
       });
+      // Update map bounds for nearby reports
+      calculateMapBounds(coordinates, 17);
     } catch {
       Alert.alert('Error', 'Unable to get your location. Please try again.');
     } finally {
@@ -163,13 +243,18 @@ export default function Pindai() {
       else if (maxDiff > 0.02) zoom = 15;
       else if (maxDiff > 0.01) zoom = 15;
 
+      const center = {
+        latitude: centerLat,
+        longitude: centerLng,
+      };
+
       setCameraPositionSafely({
-        coordinates: {
-          latitude: centerLat,
-          longitude: centerLng,
-        },
+        coordinates: center,
         zoom,
       });
+
+      // Update map bounds for nearby reports
+      calculateMapBounds(center, zoom);
       return;
     }
 
@@ -178,14 +263,19 @@ export default function Pindai() {
       return;
     }
 
+    const coords = {
+      latitude: singleLocation.latitude,
+      longitude: singleLocation.longitude,
+    };
+
     setCameraPositionSafely({
-      coordinates: {
-        latitude: singleLocation.latitude,
-        longitude: singleLocation.longitude,
-      },
+      coordinates: coords,
       zoom: 17,
     });
-  }, [selectedDestination, selectedOrigin, setCameraPositionSafely]);
+
+    // Update map bounds for nearby reports
+    calculateMapBounds(coords, 17);
+  }, [selectedDestination, selectedOrigin, setCameraPositionSafely, calculateMapBounds]);
 
   // Show result modal when analysis finishes
   useEffect(() => {
@@ -273,6 +363,17 @@ export default function Pindai() {
                 },
               ]
             : []),
+          // Add completed reports as markers
+          ...(nearbyReportsQuery.data?.data || []).map((report) => ({
+            id: report.id,
+            coordinates: {
+              latitude: report.locationGeo.lat,
+              longitude: report.locationGeo.lng,
+            },
+            title: report.title,
+            description: report.locationName,
+            color: '#10B981', // Green color for completed reports
+          })),
         ]}
         polylines={
           routeData?.coordinates

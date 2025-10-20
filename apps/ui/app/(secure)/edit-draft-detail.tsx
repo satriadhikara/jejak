@@ -445,6 +445,7 @@ export default function EditDraftDetail() {
     typeof params.title === 'string' && params.title ? params.title : 'Laporan Kerusakan';
 
   const isBlank = !params.title && !reportId;
+  const isAiGenerated = Boolean(params.title && params.kategori);
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -462,6 +463,21 @@ export default function EditDraftDetail() {
           </Pressable>
           <Text className="ml-3 font-inter-semi-bold text-lg text-gray-950">{headerText}</Text>
         </View>
+
+        {isAiGenerated && (
+          <View className="mb-5 flex-row items-start gap-3 rounded-xl bg-[#E0F2FE] p-4">
+            <FontAwesome name="magic" size={20} color="#0369A1" />
+            <View className="flex-1">
+              <Text className="mb-1 font-inter-semi-bold text-sm text-[#0369A1]">
+                Diisi oleh AI
+              </Text>
+              <Text className="font-inter-regular text-xs text-[#0369A1]">
+                Detail laporan telah diisi otomatis oleh AI. Silakan periksa dan sesuaikan jika
+                diperlukan.
+              </Text>
+            </View>
+          </View>
+        )}
 
         {isBlank && (
           <View className="mb-5 flex-row items-start gap-3 rounded-xl bg-[#EEF4FF] p-4">

@@ -115,12 +115,20 @@ const reportDeleteParamsSchema = z.object({
   id: z.uuidv7(),
 });
 
+const reportNearbyQuerySchema = z.object({
+  minLat: z.coerce.number().min(-90).max(90),
+  maxLat: z.coerce.number().min(-90).max(90),
+  minLng: z.coerce.number().min(-180).max(180),
+  maxLng: z.coerce.number().min(-180).max(180),
+});
+
 export type ReportGetQuery = z.infer<typeof reportGetQuerySchema>;
 export type ReportGetParams = z.infer<typeof reportGetParamsSchema>;
 export type ReportUpdateParams = z.infer<typeof reportUpdateParamsSchema>;
 export type ReportUpdateBody = z.infer<typeof reportUpdateBodySchema>;
 export type ReportDeleteQuery = z.infer<typeof reportDeleteParamsSchema>;
 export type ReportCreateBody = z.infer<typeof reportCreateBodySchema>;
+export type ReportNearbyQuery = z.infer<typeof reportNearbyQuerySchema>;
 
 export const reportGetQueryValidator = zValidator(
   "query",
@@ -155,5 +163,26 @@ export const reportUpdateBodyValidator = zValidator(
 export const reportDeleteParamsValidator = zValidator(
   "param",
   reportDeleteParamsSchema,
+  // formatValidationResult,
+);
+
+export const reportNearbyQueryValidator = zValidator(
+  "query",
+  reportNearbyQuerySchema,
+  // formatValidationResult,
+);
+
+const reportAnalyzeImageBodySchema = z.object({
+  imageData: z.string().min(1), // base64 encoded image
+  mimeType: z.string().min(1), // e.g., "image/jpeg"
+});
+
+export type ReportAnalyzeImageBody = z.infer<
+  typeof reportAnalyzeImageBodySchema
+>;
+
+export const reportAnalyzeImageBodyValidator = zValidator(
+  "json",
+  reportAnalyzeImageBodySchema,
   // formatValidationResult,
 );
