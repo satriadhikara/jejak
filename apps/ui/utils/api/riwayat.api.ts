@@ -191,3 +191,37 @@ export const getNearbyCompletedReports = async (
   console.log('Received nearby reports:', data);
   return data;
 };
+
+export type ImageAnalysisResult = {
+  title: string;
+  damageCategory: DamageCategory;
+  hasImpact: boolean;
+  impactDescription?: string;
+  notes?: string;
+};
+
+type AnalyzeImageResponse = {
+  data: ImageAnalysisResult;
+};
+
+export const analyzeReportImage = async (
+  cookie: string,
+  imageData: string,
+  mimeType: string
+): Promise<ImageAnalysisResult> => {
+  const response = await fetch(`${API_BASE_URL}/api/reports/analyze-image`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookie,
+    },
+    body: JSON.stringify({ imageData, mimeType }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to analyze image');
+  }
+
+  const result = (await response.json()) as AnalyzeImageResponse;
+  return result.data;
+};

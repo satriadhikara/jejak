@@ -9,6 +9,7 @@ import {
   getCompletedReportsInBounds,
 } from "@/services/report.service";
 import { addPoints } from "@/services/points.service";
+import { analyzeReportImage } from "@/services/report-analysis.service";
 import {
   reportCreateBodyValidator,
   reportUpdateParamsValidator,
@@ -17,6 +18,7 @@ import {
   reportGetQueryValidator,
   reportGetParamsValidator,
   reportNearbyQueryValidator,
+  reportAnalyzeImageBodyValidator,
 } from "@/validators/report.validator";
 
 type ReportRouteDependencies = {
@@ -45,6 +47,27 @@ export const createReportRoute = (
   const router = createRouter();
 
   router.use("/*", requireAuth);
+
+  // AI image analysis endpoint - must come before /:id
+  router.post("/analyze-image", reportAnalyzeImageBodyValidator, async (c) => {
+    const { imageData, mimeType } = c.req.valid("json");
+
+    try {
+      const analysis = await analyzeReportImage(imageData, mimeType);
+      return c.json({
+        data: analysis,
+      });
+    } catch (error) {
+      console.error("Image analysis failed:", error);
+      return c.json(
+        {
+          error: "AI_ANALYSIS_FAILED",
+          message: "Failed to analyze image",
+        },
+        500,
+      );
+    }
+  });
 
   router.get("/", reportGetQueryValidator, async (c) => {
     const user = c.get("user")!;

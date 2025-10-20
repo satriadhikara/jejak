@@ -171,3 +171,18 @@ export const reportNearbyQueryValidator = zValidator(
   reportNearbyQuerySchema,
   // formatValidationResult,
 );
+
+const reportAnalyzeImageBodySchema = z.object({
+  imageData: z.string().min(1), // base64 encoded image
+  mimeType: z.string().min(1), // e.g., "image/jpeg"
+});
+
+export type ReportAnalyzeImageBody = z.infer<
+  typeof reportAnalyzeImageBodySchema
+>;
+
+export const reportAnalyzeImageBodyValidator = zValidator(
+  "json",
+  reportAnalyzeImageBodySchema,
+  // formatValidationResult,
+);

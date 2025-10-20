@@ -6,11 +6,15 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { CameraView, useCameraPermissions, type CameraType, type FlashMode } from 'expo-camera';
 import * as ImagePicker from 'expo-image-picker';
+import { File as ExpoFile } from 'expo-file-system';
+import { useAuthContext } from '@/lib/auth-context';
+import { analyzeReportImage } from '@/utils/api/riwayat.api';
 
 const FLASH_SEQUENCE: FlashMode[] = ['off', 'on', 'auto'];
 
 export default function Kamera() {
   const router = useRouter();
+  const { cookies } = useAuthContext();
   const [permission, requestPermission] = useCameraPermissions();
   const cameraRef = useRef<CameraView | null>(null);
   const isFocused = useIsFocused();
@@ -20,6 +24,7 @@ export default function Kamera() {
   const [flashIndex, setFlashIndex] = useState(0);
   const [isCameraReady, setIsCameraReady] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   useEffect(() => {
     if (permission === null) {
@@ -43,8 +48,75 @@ export default function Kamera() {
     setFacing((prev) => (prev === 'back' ? 'front' : 'back'));
   };
 
+  const analyzeAndNavigate = async (imageUri: string) => {
+    setIsAnalyzing(true);
+    const cookieHeader = typeof cookies === 'string' ? cookies : '';
+
+    if (!cookieHeader) {
+      Alert.alert('Sesi tidak ditemukan', 'Silakan masuk kembali.');
+      setIsAnalyzing(false);
+      return;
+    }
+
+    try {
+      // Read image as base64 using new File API
+      const file = new ExpoFile(imageUri);
+
+      // Read file as bytes and convert to base64
+      const bytes = await file.bytes();
+      const base64String = btoa(String.fromCharCode(...bytes));
+
+      // Determine mime type from URI
+      const extension = imageUri.toLowerCase().split('.').pop();
+      let mimeType = 'image/jpeg';
+      if (extension === 'png') {
+        mimeType = 'image/png';
+      } else if (extension === 'webp') {
+        mimeType = 'image/webp';
+      }
+
+      // Call AI analysis
+      const analysis = await analyzeReportImage(cookieHeader, base64String, mimeType);
+
+      // Navigate with AI-generated data
+      router.push({
+        pathname: '/edit-draft-detail',
+        params: {
+          imageUris: JSON.stringify([imageUri]),
+          title: analysis.title,
+          kategori: analysis.damageCategory,
+          adaDampak: analysis.hasImpact ? 'ya' : 'tidak',
+          impactDamage: analysis.impactDescription || '',
+          catatan: analysis.notes || '',
+        },
+      });
+    } catch (error) {
+      console.error('Failed to analyze image:', error);
+      Alert.alert(
+        'Analisis Gagal',
+        'Tidak dapat menganalisis gambar. Melanjutkan tanpa analisis AI.',
+        [
+          {
+            text: 'OK',
+            onPress: () => {
+              // Navigate without AI analysis
+              router.push({
+                pathname: '/edit-draft-detail',
+                params: {
+                  imageUris: JSON.stringify([imageUri]),
+                },
+              });
+            },
+          },
+        ]
+      );
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleTakePicture = async () => {
-    if (!cameraRef.current || !isCameraReady || isCapturing) {
+    if (!cameraRef.current || !isCameraReady || isCapturing || isAnalyzing) {
       return;
     }
 
@@ -56,21 +128,20 @@ export default function Kamera() {
       });
 
       if (photo?.uri) {
-        router.push({
-          pathname: '/edit-draft-detail',
-          params: {
-            imageUris: JSON.stringify([photo.uri]),
-          },
-        });
+        setIsCapturing(false);
+        await analyzeAndNavigate(photo.uri);
       }
     } catch (error) {
       console.warn('Failed to take picture', error);
-    } finally {
       setIsCapturing(false);
     }
   };
 
   const handlePickFromGallery = async () => {
+    if (isAnalyzing) {
+      return;
+    }
+
     try {
       const permission = await ImagePicker.getMediaLibraryPermissionsAsync();
       let status = permission.status;
@@ -90,20 +161,14 @@ export default function Kamera() {
 
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: 'images',
-        allowsMultipleSelection: true,
-        selectionLimit: 5,
+        allowsMultipleSelection: false, // Changed to false for AI analysis
         quality: 0.7,
       });
 
       if (!result.canceled && result.assets?.length) {
-        const uris = result.assets.map((asset) => asset.uri).filter(Boolean);
-        if (uris.length) {
-          router.push({
-            pathname: '/edit-draft-detail',
-            params: {
-              imageUris: JSON.stringify(uris),
-            },
-          });
+        const firstImage = result.assets[0];
+        if (firstImage?.uri) {
+          await analyzeAndNavigate(firstImage.uri);
         }
       }
     } catch (error) {
@@ -178,6 +243,16 @@ export default function Kamera() {
           </View>
         )}
 
+        {isAnalyzing && (
+          <View className="absolute inset-0 items-center justify-center bg-black/70">
+            <ActivityIndicator size="large" color="#ffffff" />
+            <Text className="mt-4 text-lg font-semibold text-white">Menganalisis gambar...</Text>
+            <Text className="mt-2 px-8 text-center text-sm text-gray-300">
+              AI sedang memproses foto untuk mengisi detail laporan secara otomatis
+            </Text>
+          </View>
+        )}
+
         <View className="absolute left-6 right-6" style={{ top: insets.top + 16 }}>
           <Text className="text-[22px] font-bold text-white">Ambil Dokumentasi</Text>
           <Text className="mt-1 text-sm text-gray-200">
@@ -190,7 +265,8 @@ export default function Kamera() {
         <View className="flex-row items-center justify-between">
           <Pressable
             className="h-[52px] w-[52px] items-center justify-center rounded-full bg-black/60"
-            onPress={cycleFlash}>
+            onPress={cycleFlash}
+            disabled={isAnalyzing}>
             <Ionicons
               name={flash === 'off' ? 'flash-off' : flash === 'on' ? 'flash' : 'flash-outline'}
               size={22}
@@ -200,33 +276,35 @@ export default function Kamera() {
 
           <Pressable
             className={`h-[86px] w-[86px] items-center justify-center rounded-full border-4 border-white ${
-              !isCameraReady || isCapturing ? 'opacity-50' : ''
+              !isCameraReady || isCapturing || isAnalyzing ? 'opacity-50' : ''
             }`}
             onPress={handleTakePicture}
-            disabled={!isCameraReady || isCapturing}>
+            disabled={!isCameraReady || isCapturing || isAnalyzing}>
             <View
               className={`h-[64px] w-[64px] rounded-full ${
-                isCapturing ? 'bg-gray-300' : 'bg-white'
+                isCapturing || isAnalyzing ? 'bg-gray-300' : 'bg-white'
               }`}
             />
           </Pressable>
 
           <Pressable
             className="h-[52px] w-[52px] items-center justify-center rounded-full bg-black/60"
-            onPress={toggleFacing}>
+            onPress={toggleFacing}
+            disabled={isAnalyzing}>
             <Ionicons name="camera-reverse" size={24} color="#ffffff" />
           </Pressable>
         </View>
 
         <Pressable
           className="mt-6 flex-row items-center justify-center rounded-full border border-white/20 px-5 py-3"
-          onPress={handlePickFromGallery}>
+          onPress={handlePickFromGallery}
+          disabled={isAnalyzing}>
           <Ionicons name="images-outline" size={18} color="#ffffff" />
           <Text className="ml-2 text-sm font-medium text-white">Pilih dari galeri</Text>
         </Pressable>
 
         <Text className="mt-4 text-center text-xs text-gray-500">
-          Foto yang diambil atau dipilih akan langsung dialihkan ke halaman detail laporan.
+          Foto akan dianalisis dengan AI untuk mengisi detail laporan secara otomatis.
         </Text>
       </View>
     </SafeAreaView>
