@@ -58,3 +58,16 @@ export type UpdateReportPayload = {
   status?: ReportStatus;
   statusHistory?: StatusHistoryEntry[];
 };
+
+export type NearbyCompletedReport = {
+  id: string;
+  title: string;
+  locationName: string;
+  locationGeo: LocationGeo;
+  damageCategory: DamageCategory;
+  createdAt: string;
+};
+
+export type GetNearbyCompletedReportsResponse = {
+  data: NearbyCompletedReport[];
+};

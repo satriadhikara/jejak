@@ -109,12 +109,74 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
     return true;
   };
 
+  const getCompletedReportsInBounds = async (
+    minLat: number,
+    maxLat: number,
+    minLng: number,
+    maxLng: number,
+  ) => {
+    console.log("Querying completed reports with bounds:", {
+      minLat,
+      maxLat,
+      minLng,
+      maxLng,
+    });
+
+    // Ensure min/max are in correct order
+    const actualMinLat = Math.min(minLat, maxLat);
+    const actualMaxLat = Math.max(minLat, maxLat);
+    const actualMinLng = Math.min(minLng, maxLng);
+    const actualMaxLng = Math.max(minLng, maxLng);
+
+    console.log("Adjusted bounds for query:", {
+      actualMinLat,
+      actualMaxLat,
+      actualMinLng,
+      actualMaxLng,
+    });
+
+    // Fetch all completed reports (there won't be many)
+    const allReports = await db
+      .select({
+        id: report.id,
+        title: report.title,
+        locationName: report.locationName,
+        locationGeo: report.locationGeo,
+        damageCategory: report.damageCategory,
+        createdAt: report.createdAt,
+      })
+      .from(report)
+      .where(eq(report.status, "selesai"))
+      .orderBy(desc(report.createdAt));
+
+    console.log(`Total completed reports in database: ${allReports.length}`);
+
+    // Filter in JavaScript
+    const reportsInBounds = allReports.filter((r) => {
+      const lat = r.locationGeo.lat;
+      const lng = r.locationGeo.lng;
+      const latMatch = lat >= actualMinLat && lat <= actualMaxLat;
+      const lngMatch = lng >= actualMinLng && lng <= actualMaxLng;
+
+      console.log(
+        `  ${r.title}: lat=${lat} (${latMatch}), lng=${lng} (${lngMatch})`,
+      );
+
+      return latMatch && lngMatch;
+    });
+
+    console.log(`Found ${reportsInBounds.length} completed reports in bounds`);
+
+    return reportsInBounds;
+  };
+
   return {
     getUserReports,
     createReport,
     getUserReportById,
     updateReportById,
     deleteReportById,
+    getCompletedReportsInBounds,
   };
 };
 
@@ -142,4 +204,18 @@ export async function updateReportById(
 
 export async function deleteReportById(reportId: string, userId: string) {
   return reportService.deleteReportById(reportId, userId);
+}
+
+export async function getCompletedReportsInBounds(
+  minLat: number,
+  maxLat: number,
+  minLng: number,
+  maxLng: number,
+) {
+  return reportService.getCompletedReportsInBounds(
+    minLat,
+    maxLat,
+    minLng,
+    maxLng,
+  );
 }

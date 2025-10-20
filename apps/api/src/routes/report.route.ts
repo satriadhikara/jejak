@@ -6,6 +6,7 @@ import {
   createReport,
   updateReportById,
   deleteReportById,
+  getCompletedReportsInBounds,
 } from "@/services/report.service";
 import { addPoints } from "@/services/points.service";
 import {
@@ -15,6 +16,7 @@ import {
   reportDeleteParamsValidator,
   reportGetQueryValidator,
   reportGetParamsValidator,
+  reportNearbyQueryValidator,
 } from "@/validators/report.validator";
 
 type ReportRouteDependencies = {
@@ -23,6 +25,7 @@ type ReportRouteDependencies = {
   createReport: typeof createReport;
   updateReportById: typeof updateReportById;
   deleteReportById: typeof deleteReportById;
+  getCompletedReportsInBounds: typeof getCompletedReportsInBounds;
   addPoints: typeof addPoints;
 };
 
@@ -32,6 +35,7 @@ const defaultDependencies: ReportRouteDependencies = {
   createReport,
   updateReportById,
   deleteReportById,
+  getCompletedReportsInBounds,
   addPoints,
 };
 
@@ -47,6 +51,22 @@ export const createReportRoute = (
     const { draft } = c.req.valid("query");
 
     const reports = await deps.getUserReports(user.id, draft ?? false);
+
+    return c.json({
+      data: reports,
+    });
+  });
+
+  // This must come BEFORE /:id route to avoid conflicts
+  router.get("/nearby/completed", reportNearbyQueryValidator, async (c) => {
+    const { minLat, maxLat, minLng, maxLng } = c.req.valid("query");
+
+    const reports = await deps.getCompletedReportsInBounds(
+      minLat,
+      maxLat,
+      minLng,
+      maxLng,
+    );
 
     return c.json({
       data: reports,
