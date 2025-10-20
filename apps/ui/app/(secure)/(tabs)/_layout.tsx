@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { Platform, View } from 'react-native';
+import { Platform, View, Image } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
 import Entypo from '@expo/vector-icons/Entypo';
@@ -41,7 +41,7 @@ export default function Layout() {
         name="index"
         options={{
           title: 'Beranda',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ focused }) => (
             <View
               style={{
                 backgroundColor: focused ? '#E8EAFF' : 'transparent',
@@ -51,8 +51,17 @@ export default function Layout() {
                 minHeight: 45,
                 minWidth: 45,
                 alignItems: 'center',
+                justifyContent: 'center',
               }}>
-              <MaterialCommunityIcons name="home" size={size} color={color} />
+              <Image
+                source={
+                  focused
+                    ? require('../../../assets/nav-icons/beranda-active.png')
+                    : require('../../../assets/nav-icons/beranda.png')
+                }
+                style={{ width: 24, height: 24 }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}
@@ -61,7 +70,7 @@ export default function Layout() {
         name="pindai"
         options={{
           title: 'Pindai',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ focused }) => (
             <View
               style={{
                 backgroundColor: focused ? '#E8EAFF' : 'transparent',
@@ -72,7 +81,15 @@ export default function Layout() {
                 minWidth: 45,
                 alignItems: 'center',
               }}>
-              <AntDesign name="global" size={size} color={color} />
+              <Image
+                source={
+                  focused
+                    ? require('../../../assets/nav-icons/pindai-active.png')
+                    : require('../../../assets/nav-icons/pindai.png')
+                }
+                style={{ width: 25, height: 25 }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}
@@ -86,7 +103,7 @@ export default function Layout() {
           tabBarStyle: {
             display: 'none',
           },
-          tabBarIcon: ({ focused }) => (
+          tabBarIcon: () => (
             <View
               style={{
                 position: 'absolute',
@@ -103,7 +120,11 @@ export default function Layout() {
                 shadowRadius: 4,
                 elevation: 5,
               }}>
-              <Ionicons name="camera-sharp" size={35} color="#1EDD91" />
+              <Image
+                source={require('../../../assets/nav-icons/camera.png')}
+                style={{ width: 40, height: 40 }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}
@@ -113,7 +134,7 @@ export default function Layout() {
         name="peringkat"
         options={{
           title: 'Peringkat',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ focused }) => (
             <View
               style={{
                 backgroundColor: focused ? '#E8EAFF' : 'transparent',
@@ -124,7 +145,15 @@ export default function Layout() {
                 minWidth: 45,
                 alignItems: 'center',
               }}>
-              <Ionicons name="trophy-outline" size={size} color={color} />
+              <Image
+                source={
+                  focused
+                    ? require('../../../assets/nav-icons/peringkat-active.png')
+                    : require('../../../assets/nav-icons/peringkat.png')
+                }
+                style={{ width: 25, height: 25 }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}
@@ -133,7 +162,7 @@ export default function Layout() {
         name="riwayat"
         options={{
           title: 'Riwayat',
-          tabBarIcon: ({ color, size, focused }) => (
+          tabBarIcon: ({ focused }) => (
             <View
               style={{
                 backgroundColor: focused ? '#E8EAFF' : 'transparent',
@@ -144,7 +173,15 @@ export default function Layout() {
                 minWidth: 45,
                 alignItems: 'center',
               }}>
-              <Entypo name="text-document" size={size} color={color} />
+              <Image
+                source={
+                  focused
+                    ? require('../../../assets/nav-icons/riwayat-active.png')
+                    : require('../../../assets/nav-icons/riwayat.png')
+                }
+                style={{ width: 25, height: 25 }}
+                resizeMode="contain"
+              />
             </View>
           ),
         }}

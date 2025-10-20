@@ -69,7 +69,7 @@ export default function SignIn() {
         <BottomSheet
           ref={bottomSheetRef}
           index={-1}
-          snapPoints={snapPoints}
+          snapPoints={['32%']}
           enablePanDownToClose={true}
           backgroundStyle={{ backgroundColor: '#FFFFFF' }}
           handleIndicatorStyle={{ backgroundColor: '#D9D9D9', width: 64 }}>
@@ -81,27 +81,19 @@ export default function SignIn() {
             <View>
               <View className="mb-6 flex-row items-center gap-4">
                 <View className="h-[1px] flex-1 bg-[#ABAFB5]" />
-                <Text className="font-inter-regular text-[#ABAFB5]">atau masuk dengan</Text>
+                <Text className="font-inter-regular text-[#ABAFB5]">masuk dengan</Text>
                 <View className="h-[1px] flex-1 bg-[#ABAFB5]" />
               </View>
 
               <View className="flex flex-row items-center justify-center gap-3">
                 <Pressable
-                  className="w-1/2 flex-row items-center justify-center gap-2 rounded-2xl border border-[#ABAFB5] bg-white px-6 py-4"
+                  className="w-full flex-row items-center justify-center gap-2 rounded-2xl border border-[#ABAFB5] bg-white px-6 py-4"
                   onPress={handleSignInWithGoogle}>
                   <ExpoImage
                     source={require('@/assets/icons/google.svg')}
                     style={{ width: 19, height: 19 }}
                   />
                   <Text className="font-inter-semi-bold text-[#4B4D53]">Google</Text>
-                </Pressable>
-
-                <Pressable className="w-1/2 flex-row items-center justify-center gap-3 rounded-2xl border border-[#ABAFB5] bg-white px-6 py-4">
-                  <ExpoImage
-                    source={require('@/assets/icons/apple.svg')}
-                    style={{ width: 19, height: 19 }}
-                  />
-                  <Text className="font-inter-semi-bold text-base text-[#4B4D53]">Apple ID</Text>
                 </Pressable>
               </View>
             </View>
