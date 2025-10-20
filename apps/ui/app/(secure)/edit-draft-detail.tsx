@@ -19,6 +19,7 @@ import { useAuthContext } from '@/lib/auth-context';
 import { useLocationContext } from '@/lib/location-context';
 import {
   createReport,
+  updateReport,
   getStorageUploadUrl,
   type CreateReportPayload,
 } from '@/utils/api/riwayat.api';
@@ -44,6 +45,8 @@ export default function EditDraftDetail() {
   const router = useRouter();
   const { cookies } = useAuthContext();
   const { selectedLocation } = useLocationContext();
+
+  const reportId = typeof params.id === 'string' ? params.id : null;
 
   const parseInitialImageUris = () => {
     if (typeof params.imageUris !== 'string') {
@@ -96,6 +99,9 @@ export default function EditDraftDetail() {
   const queryClient = useQueryClient();
   const createReportMutation = useMutation({
     mutationFn: async ({ cookie, payload }: { cookie: string; payload: CreateReportPayload }) => {
+      if (reportId) {
+        return updateReport(cookie, reportId, payload);
+      }
       return createReport(cookie, payload);
     },
     onSuccess: () => {
@@ -300,8 +306,12 @@ export default function EditDraftDetail() {
       Alert.alert(
         status === 'draft' ? 'Draft tersimpan' : 'Laporan terkirim',
         status === 'draft'
-          ? 'Laporan berhasil disimpan sebagai draft.'
-          : 'Laporan berhasil dikirim untuk diperiksa.',
+          ? reportId
+            ? 'Draft berhasil diperbarui.'
+            : 'Laporan berhasil disimpan sebagai draft.'
+          : reportId
+            ? 'Perubahan laporan berhasil dikirim untuk diperiksa.'
+            : 'Laporan berhasil dikirim untuk diperiksa.',
         [
           {
             text: 'OK',
@@ -366,7 +376,7 @@ export default function EditDraftDetail() {
   const headerText =
     typeof params.title === 'string' && params.title ? params.title : 'Laporan Kerusakan';
 
-  const isBlank = !params.title;
+  const isBlank = !params.title && !reportId;
 
   return (
     <SafeAreaView className="flex-1 bg-white">
@@ -462,11 +472,15 @@ export default function EditDraftDetail() {
         visible={showBackConfirmModal}
         onCancel={() => setShowBackConfirmModal(false)}
         onConfirm={handleConfirmCancel}
-        title={isBlank ? 'Batalkan Laporan?' : 'Batalkan Perubahan?'}
+        title={
+          isBlank ? 'Batalkan Laporan?' : reportId ? 'Batalkan Perubahan?' : 'Batalkan Perubahan?'
+        }
         description={
           isBlank
             ? 'Dengan membatalkan, seluruh perubahan yang kamu buat akan terhapus permanen.'
-            : 'Dengan membatalkan akan menghapus permanen seluruh perubahan yang telah kamu buat.'
+            : reportId
+              ? 'Perubahan yang telah kamu buat tidak akan disimpan.'
+              : 'Dengan membatalkan akan menghapus permanen seluruh perubahan yang telah kamu buat.'
         }
         cancelText="Kembali"
         confirmText="Batal"

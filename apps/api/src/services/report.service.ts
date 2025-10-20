@@ -67,13 +67,39 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
     return reportData;
   };
 
-  // const updateReportById = async({
-  //   reportId,
-  //   userId,
-  //   title,
-  //   locationName,
-  //   locationGeo,
-  // });
+  const updateReportById = async (
+    reportId: string,
+    userId: string,
+    updates: Partial<Omit<CreateReportInput, "userId" | "reportId">>,
+  ) => {
+    // Build update object only with provided fields
+    const updateData: Record<string, unknown> = {};
+
+    if (updates.title !== undefined) updateData.title = updates.title;
+    if (updates.locationName !== undefined)
+      updateData.locationName = updates.locationName;
+    if (updates.locationGeo !== undefined)
+      updateData.locationGeo = updates.locationGeo;
+    if (updates.damageCategory !== undefined)
+      updateData.damageCategory = updates.damageCategory;
+    if (updates.impactOfDamage !== undefined)
+      updateData.impactOfDamage = updates.impactOfDamage;
+    if (updates.description !== undefined)
+      updateData.description = updates.description;
+    if (updates.photosUrls !== undefined)
+      updateData.photosUrls = updates.photosUrls;
+    if (updates.status !== undefined) updateData.status = updates.status;
+    if (updates.statusHistory !== undefined)
+      updateData.statusHistory = updates.statusHistory;
+
+    const [reportData] = await db
+      .update(report)
+      .set(updateData)
+      .where(and(eq(report.id, reportId), eq(report.reporterId, userId)))
+      .returning();
+
+    return reportData;
+  };
 
   const deleteReportById = async (reportId: string, userId: string) => {
     await db
@@ -87,6 +113,7 @@ export const createReportService = ({ db }: ReportServiceDependencies) => {
     getUserReports,
     createReport,
     getUserReportById,
+    updateReportById,
     deleteReportById,
   };
 };
@@ -103,6 +130,14 @@ export async function getUserReportById(reportId: string, userId: string) {
 
 export async function createReport(input: CreateReportInput) {
   return reportService.createReport(input);
+}
+
+export async function updateReportById(
+  reportId: string,
+  userId: string,
+  input: Partial<Omit<CreateReportInput, "userId" | "reportId">>,
+) {
+  return reportService.updateReportById(reportId, userId, input);
 }
 
 export async function deleteReportById(reportId: string, userId: string) {

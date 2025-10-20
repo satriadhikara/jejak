@@ -6,6 +6,7 @@ import type {
   PhotoUrl,
   ReportStatus,
   StatusHistoryEntry,
+  UpdateReportPayload,
   UserReport,
 } from '@/utils/types/riwayat.types';
 
@@ -73,6 +74,10 @@ type CreateReportResponse = {
   data: UserReport;
 };
 
+type UpdateReportResponse = {
+  data: UserReport;
+};
+
 export const getStorageReadUrl = async (
   cookie: string,
   key: string
@@ -130,4 +135,25 @@ export const createReport = async (
   }
 
   return (await response.json()) as CreateReportResponse;
+};
+
+export const updateReport = async (
+  cookie: string,
+  reportId: string,
+  payload: UpdateReportPayload
+): Promise<UpdateReportResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/reports/${reportId}`, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookie,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to update report');
+  }
+
+  return (await response.json()) as UpdateReportResponse;
 };

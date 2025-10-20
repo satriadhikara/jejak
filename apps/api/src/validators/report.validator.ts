@@ -61,10 +61,55 @@ const reportCreateBodySchema = z.object({
 });
 
 const reportUpdateParamsSchema = z.object({
-  id: z.uuidv7(),
+  id: z.string(),
 });
 
-// const reportUpdateBodySchema = z.object({});
+const reportUpdateBodySchema = z.object({
+  title: z.string().min(1).optional(),
+  locationName: z.string().min(1).optional(),
+  locationGeo: z
+    .object({
+      lat: z.number(),
+      lng: z.number(),
+    })
+    .optional(),
+  damageCategory: z.enum(["berat", "sedang", "ringan"]).optional(),
+  impactOfDamage: z.string().optional(),
+  description: z.string().optional(),
+  photosUrls: z
+    .array(
+      z.object({
+        key: z.string().min(1),
+      }),
+    )
+    .optional(),
+  status: z
+    .enum([
+      "draft",
+      "diperiksa",
+      "dikonfirmasi",
+      "dalam_penanganan",
+      "selesai",
+      "ditolak",
+    ])
+    .optional(),
+  statusHistory: z
+    .array(
+      z.object({
+        status: z.enum([
+          "draft",
+          "diperiksa",
+          "dikonfirmasi",
+          "dalam_penanganan",
+          "selesai",
+          "ditolak",
+        ]),
+        timestamp: z.string().min(1),
+        description: z.string().min(1),
+      }),
+    )
+    .optional(),
+});
 
 const reportDeleteParamsSchema = z.object({
   id: z.uuidv7(),
@@ -72,7 +117,8 @@ const reportDeleteParamsSchema = z.object({
 
 export type ReportGetQuery = z.infer<typeof reportGetQuerySchema>;
 export type ReportGetParams = z.infer<typeof reportGetParamsSchema>;
-export type ReportUpdateQuery = z.infer<typeof reportUpdateParamsSchema>;
+export type ReportUpdateParams = z.infer<typeof reportUpdateParamsSchema>;
+export type ReportUpdateBody = z.infer<typeof reportUpdateBodySchema>;
 export type ReportDeleteQuery = z.infer<typeof reportDeleteParamsSchema>;
 export type ReportCreateBody = z.infer<typeof reportCreateBodySchema>;
 
@@ -97,6 +143,12 @@ export const reportCreateBodyValidator = zValidator(
 export const reportUpdateParamsValidator = zValidator(
   "param",
   reportUpdateParamsSchema,
+  // formatValidationResult,
+);
+
+export const reportUpdateBodyValidator = zValidator(
+  "json",
+  reportUpdateBodySchema,
   // formatValidationResult,
 );
 
