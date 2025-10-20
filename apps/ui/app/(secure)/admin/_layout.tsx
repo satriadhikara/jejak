@@ -1,6 +1,14 @@
-import { Stack } from 'expo-router';
+import { Redirect, Stack } from 'expo-router';
+import { useAuthContext } from '@/lib/auth-context';
 
 export default function StackLayout() {
+  const { role } = useAuthContext();
+
+  // Check if user has admin role
+  if (role !== 'admin') {
+    return <Redirect href="/" />;
+  }
+
   return (
     <Stack>
       <Stack.Screen name="dashboard" options={{ headerShown: false }} />
