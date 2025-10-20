@@ -128,38 +128,42 @@ export default function DashboardAdmin() {
         </View>
 
         <View className="gap-3">
-          <View className="rounded-2xl bg-white p-4">
-            <Text className="mb-1 font-inter-medium text-base text-gray-950">
-              Laporan Belum Diperbarui
-            </Text>
-            <Text className="mb-3 font-inter-regular text-sm text-gray-500">
-              Ada laporan yang belum diperbarui lebih dari 7 hari. Pastikan proses penanganan tetap
-              berjalan agar tidak tertunda terlalu lama.
-            </Text>
-            <Pressable
-              className="rounded-xl bg-blue-50 py-2"
-              onPress={() => router.push('/(secure)/admin/laporanNotUpdated')}>
-              <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
-                Lihat daftar laporan →
+          {stats && stats.laporanTidakDiperbarui > 0 && (
+            <View className="rounded-2xl bg-white p-4">
+              <Text className="mb-1 font-inter-medium text-base text-gray-950">
+                Laporan Belum Diperbarui
               </Text>
-            </Pressable>
-          </View>
+              <Text className="mb-3 font-inter-regular text-sm text-gray-500">
+                Ada laporan yang belum diperbarui lebih dari 7 hari. Pastikan proses penanganan
+                tetap berjalan agar tidak tertunda terlalu lama.
+              </Text>
+              <Pressable
+                className="rounded-xl bg-blue-50 py-2"
+                onPress={() => router.push('/(secure)/admin/laporanNotUpdated')}>
+                <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
+                  Lihat daftar laporan →
+                </Text>
+              </Pressable>
+            </View>
+          )}
 
-          <View className="rounded-2xl bg-white p-4">
-            <Text className="mb-1 font-inter-medium text-base text-gray-950">
-              Tindakan Diperlukan
-            </Text>
-            <Text className="mb-3 font-inter-regular text-sm text-gray-500">
-              {stats?.laporanBaru || 0} laporan baru menunggu peninjauan hari ini
-            </Text>
-            <Pressable
-              className="rounded-xl bg-blue-50 py-2"
-              onPress={() => router.push('/(secure)/admin/laporanJustEntered')}>
-              <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
-                Tinjau sekarang →
+          {stats && stats.laporanBaruHariIni > 0 && (
+            <View className="rounded-2xl bg-white p-4">
+              <Text className="mb-1 font-inter-medium text-base text-gray-950">
+                Tindakan Diperlukan
               </Text>
-            </Pressable>
-          </View>
+              <Text className="mb-3 font-inter-regular text-sm text-gray-500">
+                {stats?.laporanBaruHariIni} laporan baru menunggu peninjauan hari ini
+              </Text>
+              <Pressable
+                className="rounded-xl bg-blue-50 py-2"
+                onPress={() => router.push('/(secure)/admin/laporanNew')}>
+                <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
+                  Tinjau sekarang →
+                </Text>
+              </Pressable>
+            </View>
+          )}
         </View>
       </ScrollView>
     </View>

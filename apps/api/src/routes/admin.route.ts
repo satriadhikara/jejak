@@ -6,6 +6,7 @@ import {
   getNewReports,
   getInProgressReports,
   getCompletedReports,
+  getStaleReports,
 } from "@/services/admin.service";
 
 type AdminRouteDependencies = {
@@ -14,6 +15,7 @@ type AdminRouteDependencies = {
   getNewReports: typeof getNewReports;
   getInProgressReports: typeof getInProgressReports;
   getCompletedReports: typeof getCompletedReports;
+  getStaleReports: typeof getStaleReports;
 };
 
 const defaultDependencies: AdminRouteDependencies = {
@@ -22,6 +24,7 @@ const defaultDependencies: AdminRouteDependencies = {
   getNewReports,
   getInProgressReports,
   getCompletedReports,
+  getStaleReports,
 };
 
 export const createAdminRouter = (
@@ -78,6 +81,16 @@ export const createAdminRouter = (
     } catch (error) {
       console.error("Error in admin completed reports endpoint:", error);
       return c.json({ error: "Failed to fetch completed reports" }, 500);
+    }
+  });
+
+  router.get("/reports/stale", async (c) => {
+    try {
+      const reports = await deps.getStaleReports();
+      return c.json({ data: reports });
+    } catch (error) {
+      console.error("Error in admin stale reports endpoint:", error);
+      return c.json({ error: "Failed to fetch stale reports" }, 500);
     }
   });
 
