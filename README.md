@@ -1,89 +1,88 @@
-# 👣 Jejak
+# <img src="apps/ui/assets/Logo.png" alt="Jejak Logo" width="20" /> Jejak
 
-> **Smart Pedestrian Tracking & Safety Platform**
+> **Platform Pelacakan & Keamanan Pejalan Kaki Pintar**
 
 [![Status](https://img.shields.io/badge/Status-Finalist-brightgreen)](https://gemastik.id)
 [![Competition](https://img.shields.io/badge/Competition-Gemastik%2018-blue)](https://gemastik.id)
 [![Team](https://img.shields.io/badge/Team-GajahBiru%20%7C%20ITB-informational)](https://www.itb.ac.id)
 [![License](https://img.shields.io/badge/License-Proprietary-red)](#)
 
-## 🏆 Competition Information
+## 🏆 Informasi Kompetisi
 
-**Jejak** is a finalist project competing in **Gemastik 18** held by **PusPresNas** (Pusat Prestasi Nasional). Our team **GajahBiru** from **Institut Teknologi Bandung (ITB)** is proud to be among the finalists and will compete for the championship in the final round.
+**Jejak** adalah proyek finalis yang berkompetisi di **Gemastik 18** yang diselenggarakan oleh **PusPresNas** (Pusat Prestasi Nasional). Tim kami **GajahBiru** dari **Institut Teknologi Bandung (ITB)** bangga menjadi salah satu finalis dan akan bertanding untuk menjadi juara di babak final.
 
-- 🎯 **Competition**: Gemastik 18
-- 🏛️ **Organizer**: PusPresNas (Pusat Prestasi Nasional)
-- 👥 **Team**: GajahBiru
-- 🎓 **Institution**: Institut Teknologi Bandung (ITB)
-- 🥇 **Status**: Finalist (Competing for Final Round)
-
----
-
-## 📱 About Jejak
-
-**Jejak** is an innovative pedestrian tracking and safety platform designed to enhance urban mobility and pedestrian security. The platform combines mobile accessibility with powerful backend services to provide real-time pedestrian route tracking, safety monitoring, and community-based incident reporting.
-
-### Key Features
-
-- 🗺️ **Real-time Route Tracking**: Track pedestrian journeys with precise GPS coordinates
-- � **Safety Monitoring**: Real-time safety alerts and crowd density analysis
-- 📍 **Incident Reporting**: Community-based reporting system for hazards and unsafe areas
-- 🔐 **Secure Authentication**: Enterprise-grade security for user data
-- 📱 **Cross-platform Support**: Native mobile experience on iOS and Android
-- ☁️ **Cloud Integration**: Seamless S3-based storage for incident photos and evidence
-- 🤖 **AI-Powered Analysis**: Leveraging Google Gemini AI for intelligent route suggestions and risk assessment
+- 🎯 **Kompetisi**: Gemastik 18
+- 🏛️ **Penyelenggara**: PusPresNas (Pusat Prestasi Nasional)
+- 👥 **Tim**: GajahBiru
+- 🎓 **Institusi**: Institut Teknologi Bandung (ITB)
+- 🥇 **Status**: Finalis (Bertanding di Babak Final)
 
 ---
 
-## 🏗️ Project Architecture
+## 📱 Tentang Jejak
 
-This is a **monorepo** project built with modern technologies:
+**Jejak** adalah platform inovatif untuk pelacakan dan keamanan pejalan kaki yang dirancang untuk meningkatkan mobilitas perkotaan dan keamanan pejalan kaki. Platform ini menggabungkan aksesibilitas mobile dengan layanan backend yang kuat untuk menyediakan pelacakan rute pejalan kaki secara real-time, pemantauan keamanan, dan pelaporan kerusakan trotoar.
+
+### Fitur Utama
+
+- 🗺️ **Pelacakan Rute Real-time**: Melacak perjalanan pejalan kaki dengan koordinat GPS yang akurat
+- 🛡️ **Pemantauan Keamanan**: Notifikasi keamanan real-time dan analisis kepadatan keramaian
+- 📍 **Pelaporan Insiden**: Sistem pelaporan berbasis komunitas untuk bahaya dan area tidak aman
+- 🔐 **autentikasi Aman**: Keamanan data pengguna tingkat enterprise
+- ☁️ **Integrasi Cloud**: Penyimpanan foto insiden dan bukti di S3 secara seamless
+- 🤖 **Analisis Berbasis AI**: Menggunakan Google Gemini AI untuk saran rute cerdas dan penilaian risiko
+
+---
+
+## 🏗️ Arsitektur Proyek
+
+Ini adalah proyek **monorepo** yang dibangun dengan teknologi modern:
 
 ```
 jejak/
 ├── apps/
 │   ├── api/           # Backend API (Hono.js)
 │   └── ui/            # Mobile App (React Native/Expo)
-├── package.json       # Workspace configuration
-└── tsconfig.json      # TypeScript configuration
+├── package.json       # Konfigurasi workspace
+└── tsconfig.json      # Konfigurasi TypeScript
 ```
 
 ### Backend (`apps/api`)
 
-- **Framework**: [Hono.js](https://hono.dev) - Lightweight web framework
-- **Database**: PostgreSQL with [Drizzle ORM](https://orm.drizzle.team)
-- **Authentication**: [Better Auth](https://better-auth.vercel.app)
-- **API Validation**: Zod for type-safe validation
+- **Framework**: [Hono.js](https://hono.dev) 
+- **Database**: PostgreSQL dengan [Drizzle ORM](https://orm.drizzle.team)
+- **autentikasi**: [Better Auth](https://better-auth.vercel.app)
+- **Validasi API**: Zod untuk validasi tipe yang aman
 - **Testing**: Bun test framework
-- **Linting**: oxlint for code quality
+- **Linting**: oxlint untuk kualitas kode
 
 **Tech Stack**: Hono, Drizzle ORM, PostgreSQL, Zod, Better Auth, Google Gemini AI
 
 ### Frontend (`apps/ui`)
 
-- **Framework**: [React Native](https://reactnative.dev) with [Expo](https://expo.dev)
-- **Routing**: Expo Router (file-based routing)
-- **State Management**: React Query for server state
-- **Authentication**: Better Auth for seamless user sessions
-- **Styling**: NativeWind (Tailwind CSS for React Native)
-- **Maps**: Expo Maps integration
-- **Location**: Expo Location API
+- **Framework**: [React Native](https://reactnative.dev) dengan [Expo](https://expo.dev)
+- **Routing**: Expo Router (routing berbasis file)
+- **Manajemen State**: React Query untuk state server
+- **autentikasi**: Better Auth untuk sesi pengguna yang seamless
+- **Styling**: NativeWind (Tailwind CSS untuk React Native)
+- **Maps**: Integrasi Expo Maps
+- **Lokasi**: API Expo Location
 
 **Tech Stack**: React Native, Expo, Expo Router, React Query, NativeWind, Better Auth
 
 ---
 
-## 🚀 Getting Started
+## 🚀 Memulai
 
-### Prerequisites
+### Prasyarat
 
-- [Bun](https://bun.sh) v1.2.19 or later
-- Node.js 18+ (for compatibility)
+- [Bun](https://bun.sh) v1.2.19 atau lebih baru
+- Node.js 18+ (untuk kompatibilitas)
 - Git
 
-### Installation
+### Instalasi
 
-1. **Clone the repository**
+1. **Clone repository**
 
    ```bash
    git clone https://github.com/satriadhikara/jejak.git
@@ -95,52 +94,27 @@ jejak/
    bun install
    ```
 
-### Development
-
-#### Run All Services
-
-```bash
-bun run dev
-```
-
-#### Run Only Mobile UI
-
-```bash
-bun run dev:ui
-```
-
-To start the Expo development server:
+### Pengembangan
 
 ```bash
 cd apps/ui
-bun run start
-# Or for specific platforms:
-bun run ios      # iOS
-bun run android  # Android
-bun run web      # Web
+bunx expo run:android
 ```
-
-#### Run Only Backend API
-
-```bash
-bun run dev:api
-```
-
-The API will be available at `http://localhost:3000` (or configured port)
+pastikan emulator android atau android tersedia
 
 ### Database
 
-#### Initialize Database
+#### Inisialisasi Database
 
 ```bash
 cd apps/api
-bun run db:generate   # Generate Drizzle client
-bun run db:migrate    # Apply migrations
+bun run db:generate   # Generate client Drizzle
+bun run db:migrate    # Terapkan migrasi
 ```
 
 #### Database Studio
 
-Open Drizzle Studio to visualize and manage data:
+Buka Drizzle Studio untuk visualisasi dan manajemen data:
 
 ```bash
 cd apps/api
@@ -149,47 +123,45 @@ bun run db:studio
 
 ---
 
-## 📋 Available Scripts
+## 📋 Skrip Tersedia
 
-### Root Level
+### Level Root
 
-| Script            | Description                          |
-| ----------------- | ------------------------------------ |
-| `bun run dev`     | Run all services in development mode |
-| `bun run dev:ui`  | Run only the mobile UI               |
-| `bun run dev:api` | Run only the backend API             |
+| Skrip              | Deskripsi                                 |
+| ------------------ | ----------------------------------------- |
+| `bun run dev`      | Jalankan semua layanan dalam mode dev     |
+| `bun run dev:ui`   | Jalankan hanya mobile UI                  |
+| `bun run dev:api`  | Jalankan hanya backend API                |
 
 ### API (`apps/api`)
 
-| Script                | Description                 |
-| --------------------- | --------------------------- |
-| `bun run dev`         | Start API with hot reload   |
-| `bun run start`       | Start API for production    |
-| `bun run test`        | Run test suite              |
-| `bun run lint`        | Lint code with oxlint       |
-| `bun run db:generate` | Generate Drizzle ORM client |
-| `bun run db:migrate`  | Run database migrations     |
-| `bun run db:studio`   | Open Drizzle Studio         |
+| Skrip                  | Deskripsi                      |
+| ---------------------- | ------------------------------ |
+| `bun run dev`          | Mulai API dengan hot reload    |
+| `bun run start`        | Mulai API untuk produksi       |
+| `bun run test`         | Jalankan test suite            |
+| `bun run lint`         | Lint kode dengan oxlint        |
+| `bun run db:generate`  | Generate client Drizzle ORM    |
+| `bun run db:migrate`   | Jalankan migrasi database      |
+| `bun run db:studio`    | Buka Drizzle Studio            |
 
 ### UI (`apps/ui`)
 
-| Script             | Description                   |
-| ------------------ | ----------------------------- |
-| `bun run start`    | Start Expo development server |
-| `bun run android`  | Build and run on Android      |
-| `bun run ios`      | Build and run on iOS          |
-| `bun run web`      | Run in web browser            |
-| `bun run lint`     | Lint and check formatting     |
-| `bun run format`   | Format code automatically     |
-| `bun run prebuild` | Prebuild native apps          |
+| Skrip             | Deskripsi                        |
+| ----------------- | -------------------------------- |
+| `bun run start`   | Mulai server pengembangan Expo   |
+| `bunx expo run:android` | Build dan jalankan di Android    |
+| `bun run lint`    | Lint dan cek format              |
+| `bun run format`  | Format kode otomatis             |
+| `bun run prebuild`| Prebuild aplikasi native         |
 
 ---
 
-## 🔧 Configuration
+## 🔧 Konfigurasi
 
 ### Environment Variables
 
-Create `.env` files in each app:
+Buat file `.env` di setiap app:
 
 **`apps/api/.env`**
 
@@ -212,31 +184,31 @@ EXPO_PUBLIC_APP_NAME=Jejak
 
 ---
 
-## 📚 Project Structure
+## 📚 Struktur Proyek
 
 ### API Routes
 
-- `/health` - Health check endpoint
-- `/auth` - Authentication endpoints
-- `/maps` - Maps and location data
-- `/points` - Environmental points tracking
-- `/reports` - Report management
-- `/storage` - File upload/download
+- `/health` - Endpoint cek kesehatan
+- `/auth` - Endpoint autentikasi
+- `/maps` - Data maps dan lokasi
+- `/points` - Pelacakan poin lingkungan
+- `/reports` - Manajemen laporan
+- `/storage` - Upload/download file
 
 ### Mobile Screens
 
-- `sign-in` - User authentication
-- `(secure)` - Protected routes
-  - `beranda` - Home/Dashboard with route tracking
-  - `analyze` - Safety analytics & insights
-  - `riwayat` - Pedestrian history & journey logs
-  - `location-search` - Route finder & hazard search
+- `sign-in` - autentikasi pengguna
+- `(secure)` - Rute terlindungi
+  - `beranda` - Home/Dashboard dengan pelacakan rute
+  - `analyze` - Analitik & insight keamanan
+  - `riwayat` - Riwayat pejalan kaki & log perjalanan
+  - `location-search` - Pencarian rute & bahaya
 
 ---
 
-## 🧪 Testing
+## 🧪 Pengujian
 
-### Run Tests
+### Jalankan Tes
 
 ```bash
 cd apps/api
@@ -250,16 +222,16 @@ cd apps/api
 bun run test --coverage
 ```
 
-Tests are located in `apps/api/tests/` with:
+Tes berada di `apps/api/tests/` dengan:
 
-- Integration tests
-- Route tests
-- Service unit tests
-- Mock database setup
+- Tes integrasi
+- Tes route
+- Tes unit service
+- Setup database mock
 
 ---
 
-## 🎨 Code Quality
+## 🎨 Kualitas Kode
 
 ### Linting
 
@@ -277,7 +249,7 @@ cd apps/ui
 bun run lint
 ```
 
-### Code Formatting
+### Format Kode
 
 **UI:**
 
@@ -294,19 +266,19 @@ bun run format
 
 ```bash
 cd apps/ui
-bun run prebuild        # Generate native code
-bun run android         # Build and deploy to Android
-bun run ios             # Build and deploy to iOS
+bun run prebuild        # Generate kode native
+bun run android         # Build dan deploy ke Android
+bun run ios             # Build dan deploy ke iOS
 ```
 
 ### Backend API
 
 ```bash
 cd apps/api
-bun run start           # Start production server
+bun run start           # Mulai server produksi
 ```
 
-For Docker deployment:
+Untuk deployment Docker:
 
 ```bash
 docker build -t jejak .
@@ -315,42 +287,42 @@ docker run -p 3000:3000 jejak
 
 ---
 
-## 🔐 Security
+## 🔐 Keamanan
 
-- ✅ Encrypted authentication with Better Auth
-- ✅ Environment variables for sensitive data
-- ✅ CORS middleware for API protection
-- ✅ Input validation with Zod
-- ✅ Secure session management
-
----
-
-## 📄 License
-
-This project is proprietary and is part of the Gemastik 18 competition. Unauthorized reproduction or distribution is prohibited.
+- ✅ autentikasi terenkripsi dengan Better Auth
+- ✅ Environment variable untuk data sensitif
+- ✅ Middleware CORS untuk proteksi API
+- ✅ Validasi input dengan Zod
+- ✅ Manajemen sesi yang aman
 
 ---
 
-## 👥 Team GajahBiru
+## 📄 Lisensi
 
-| Name                | Github                                                | Institution                                |
-| ------------------- | ----------------------------------------------------- | ------------------------------------------ |
-| Satriadhikara Panji | [satriadhikara](https://github.com/satriadhikara)     | ITB - Informatics Engineering 22           |
-| Mohammad Andhika    | [andhikafdh](https://github.com/andhikafdh)           | ITB - Informatics Engineering 22           |
-| Yusril Fazri M.     | [YusrilMahendraa](https://github.com/YusrilMahendraa) | ITB - Information System and Technology 22 |
+Proyek ini bersifat proprietary dan merupakan bagian dari kompetisi Gemastik 18. Reproduksi atau distribusi tanpa izin dilarang.
 
 ---
 
-## 📞 Support
+## 👥 Tim GajahBiru
 
-For questions or issues related to this project, please contact the development team
+| Nama                | Github                                                | Institusi                                   |
+| ------------------- | ----------------------------------------------------- | ------------------------------------------- |
+| Satriadhikara Panji | [satriadhikara](https://github.com/satriadhikara)     | ITB - Teknik Informatika 22                 |
+| Mohammad Andhika    | [andhikafdh](https://github.com/andhikafdh)           | ITB - Teknik Informatika 22                 |
+| Yusril Fazri M.     | [YusrilMahendraa](https://github.com/YusrilMahendraa) | ITB - Sistem dan Teknologi Informasi 22     |
+
+---
+
+## 📞 Dukungan
+
+Untuk pertanyaan atau masalah terkait proyek ini, silakan hubungi tim pengembang.
 
 ---
 
 <div align="center">
 
-**Gemastik 18 Finalist | Team GajahBiru | ITB**
+**Finalis Gemastik 18 | Tim GajahBiru | ITB**
 
-_Building safer urban spaces through intelligent pedestrian tracking technology_
+_Membangun ruang kota yang lebih aman melalui teknologi pelacakan pejalan kaki yang cerdas_
 
 </div>
