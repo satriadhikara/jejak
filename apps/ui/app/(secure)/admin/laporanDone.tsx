@@ -100,7 +100,7 @@ export default function LaporanDone() {
   };
 
   const handleViewReportDetail = (id: string) => {
-    router.push(`/riwayat/${id}`);
+    router.push(`/(secure)/admin/report/${id}`);
   };
 
   return (

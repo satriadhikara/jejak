@@ -1,12 +1,12 @@
 export type ReportStatus =
-  | "draft"
-  | "diperiksa"
-  | "dikonfirmasi"
-  | "dalam_penanganan"
-  | "selesai"
-  | "ditolak";
+  | 'draft'
+  | 'diperiksa'
+  | 'dikonfirmasi'
+  | 'dalam_penanganan'
+  | 'selesai'
+  | 'ditolak';
 
-export type DamageCategory = "berat" | "sedang" | "ringan";
+export type DamageCategory = 'berat' | 'sedang' | 'ringan';
 
 export type LocationGeo = {
   lat: number;
@@ -43,4 +43,40 @@ export type AdminReport = {
 
 export type GetAllReportsResponse = {
   data: AdminReport[];
+};
+
+export type GetAdminReportByIdResponse = {
+  data: AdminReport | null;
+};
+
+export type UpdateReportStatusPayload = {
+  status: ReportStatus;
+  statusHistory: StatusHistoryEntry[];
+};
+
+export type UpdateReportStatusResponse = {
+  data: AdminReport;
+};
+
+export type CompleteReportPayload = {
+  handlingDescription: string;
+  notes?: string;
+  completionImages: { key: string }[];
+};
+
+export type ReportCompletion = {
+  id: string;
+  reportId: string;
+  handlingDescription: string;
+  notes: string | null;
+  completionImages: { key: string }[];
+  createdAt: string;
+};
+
+export type CompleteReportResponse = {
+  data: {
+    completion: ReportCompletion;
+    report: AdminReport;
+    pointsAwarded: number;
+  };
 };
