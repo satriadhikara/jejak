@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  Image,
   ScrollView,
   Pressable,
   Alert,
@@ -12,15 +11,12 @@ import {
 import { Ionicons } from '@expo/vector-icons';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useLocalSearchParams } from 'expo-router';
-import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import * as ImagePicker from 'expo-image-picker';
-import FontAwesome5 from '@expo/vector-icons/FontAwesome5';
 import BackConfirmationModal from '@/components/back-confirmation-modal';
 import ConfirmationModal from '@/components/confirmation-modal';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
-// import * as FileSystem from "expo-file-system";
 import { File as ExpoFile, Paths } from 'expo-file-system';
 import { useAuthContext } from '@/lib/auth-context';
+import { useLocationContext } from '@/lib/location-context';
 import {
   createReport,
   getStorageUploadUrl,
@@ -33,6 +29,13 @@ import type {
   StatusHistoryEntry,
 } from '@/utils/types/riwayat.types';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import {
+  ImageDocumentation,
+  KategoriDropdown,
+  LocationSelector,
+  DamageImpactSection,
+  FormFooterButtons,
+} from '@/components/edit-draft-detail';
 
 type SubmitStatus = Extract<ReportStatus, 'draft' | 'diperiksa'>;
 
@@ -40,6 +43,7 @@ export default function EditDraftDetail() {
   const params = useLocalSearchParams();
   const router = useRouter();
   const { cookies } = useAuthContext();
+  const { selectedLocation } = useLocationContext();
 
   const parseInitialImageUris = () => {
     if (typeof params.imageUris !== 'string') {
@@ -66,6 +70,9 @@ export default function EditDraftDetail() {
   const [adaDampak, setAdaDampak] = useState(
     typeof params.adaDampak === 'string' ? params.adaDampak : null
   );
+  const [impactDamage, setImpactDamage] = useState(
+    typeof params.impactDamage === 'string' ? params.impactDamage : ''
+  );
   const [catatan, setCatatan] = useState(typeof params.catatan === 'string' ? params.catatan : '');
   const [imageUris, setImageUris] = useState<string[]>(parseInitialImageUris);
   const [isDirty, setIsDirty] = useState(false);
@@ -77,16 +84,14 @@ export default function EditDraftDetail() {
   const [isUploading, setIsUploading] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<SubmitStatus | null>(null);
 
-  const kategoriOptions = [
-    { label: 'Ringan', value: 'ringan' },
-    { label: 'Sedang', value: 'sedang' },
-    { label: 'Berat', value: 'berat' },
-  ];
-  const locationName =
-    typeof params.location === 'string' && params.location.length > 0
+  const DEFAULT_LOCATION_GEO = selectedLocation
+    ? { lat: selectedLocation.latitude, lng: selectedLocation.longitude }
+    : { lat: -6.914744, lng: 107.60981 };
+  const locationName = selectedLocation
+    ? selectedLocation.mainText
+    : typeof params.location === 'string' && params.location.length > 0
       ? params.location
       : 'Lokasi belum ditentukan';
-  const DEFAULT_LOCATION_GEO = { lat: -6.914744, lng: 107.60981 }; // Placeholder until maps integration
 
   const queryClient = useQueryClient();
   const createReportMutation = useMutation({
@@ -110,55 +115,6 @@ export default function EditDraftDetail() {
     });
   };
 
-  // Image picker handler
-  const handlePickFromLibrary = async () => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: 'images',
-      quality: 0.7,
-      allowsMultipleSelection: true,
-    });
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const uris = result.assets
-        .map((asset) => asset.uri)
-        .filter((uri): uri is string => typeof uri === 'string');
-      appendImageUris(uris);
-    }
-  };
-
-  const handlePickFromCamera = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
-    if (status !== 'granted') {
-      Alert.alert(
-        'Izin Kamera Diperlukan',
-        'Aktifkan akses kamera agar kamu bisa mengambil dokumentasi langsung dari kamera.'
-      );
-      return;
-    }
-
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 0.7,
-      mediaTypes: 'images',
-    });
-
-    if (!result.canceled && result.assets && result.assets.length > 0) {
-      const uris = result.assets
-        .map((asset) => asset.uri)
-        .filter((uri): uri is string => typeof uri === 'string');
-      appendImageUris(uris);
-    }
-  };
-
-  const handleAddImage = () => {
-    if (isSubmitting) {
-      return;
-    }
-    Alert.alert('Tambah Dokumentasi', 'Pilih sumber gambar', [
-      { text: 'Kamera', onPress: handlePickFromCamera },
-      { text: 'Galeri', onPress: handlePickFromLibrary },
-      { text: 'Batal', style: 'cancel' },
-    ]);
-  };
-
   const handleRemoveImage = (uri: string) => {
     if (isSubmitting) {
       return;
@@ -171,6 +127,7 @@ export default function EditDraftDetail() {
       selectedKategori ||
       adaDampak ||
       catatan ||
+      impactDamage ||
       imageUris.length > 0 ||
       namaLaporan.trim().length > 0
     ) {
@@ -178,7 +135,7 @@ export default function EditDraftDetail() {
     } else {
       setIsDirty(false);
     }
-  }, [selectedKategori, adaDampak, catatan, imageUris, namaLaporan]);
+  }, [selectedKategori, adaDampak, catatan, impactDamage, imageUris, namaLaporan]);
 
   const validateForm = (status: SubmitStatus) => {
     if (!namaLaporan.trim()) {
@@ -196,7 +153,7 @@ export default function EditDraftDetail() {
       return false;
     }
 
-    if (adaDampak === 'ya' && !catatan.trim()) {
+    if (adaDampak === 'ya' && !impactDamage.trim()) {
       Alert.alert('Isi dampak kerusakan', 'Jelaskan dampak dari kerusakan yang ditemukan.');
       return false;
     }
@@ -319,6 +276,7 @@ export default function EditDraftDetail() {
       }
 
       const trimmedNotes = catatan.trim();
+      const trimmedImpact = impactDamage.trim();
       const payload: CreateReportPayload = {
         title: namaLaporan.trim(),
         locationName,
@@ -329,8 +287,8 @@ export default function EditDraftDetail() {
         statusHistory,
       };
 
-      if (adaDampak === 'ya' && trimmedNotes) {
-        payload.impactOfDamage = trimmedNotes;
+      if (adaDampak === 'ya' && trimmedImpact) {
+        payload.impactOfDamage = trimmedImpact;
       }
 
       if (trimmedNotes) {
@@ -445,23 +403,12 @@ export default function EditDraftDetail() {
         <Text className="mb-2 font-inter-medium text-sm text-gray-700">
           Dokumentasi <Text className="text-[#EB3030]">*</Text>
         </Text>
-        <View className="mb-5 flex-row flex-wrap gap-4">
-          {imageUris.map((uri: string) => (
-            <View key={uri} className="relative h-20 w-20">
-              <Image source={{ uri }} className="h-20 w-20 rounded-xl" />
-              <Pressable
-                className="absolute right-1 top-1 rounded-full bg-black/50 p-1"
-                onPress={() => handleRemoveImage(uri)}>
-                <Ionicons name="close" size={16} color="#fff" />
-              </Pressable>
-            </View>
-          ))}
-          <Pressable
-            className="flex h-20 w-20 items-center justify-center rounded-xl border border-dashed border-gray-300"
-            onPress={handleAddImage}>
-            <MaterialIcons name="add-photo-alternate" size={26} color="#9CA3AF" />
-          </Pressable>
-        </View>
+        <ImageDocumentation
+          imageUris={imageUris}
+          onRemoveImage={handleRemoveImage}
+          onAddImage={appendImageUris}
+          isSubmitting={isSubmitting}
+        />
 
         {/* Nama Laporan */}
         <Text className="mb-1 font-inter-medium text-sm text-gray-700">
@@ -475,161 +422,40 @@ export default function EditDraftDetail() {
         />
 
         {/* Lokasi */}
-        <Text className="mb-1 font-inter-medium text-sm text-gray-700">
-          Lokasi <Text className="text-[#EB3030]">*</Text>
-        </Text>
-        <View className="mb-3 flex-row items-start justify-between">
-          <View className="flex-1">
-            <Text className="font-inter-semi-bold text-base text-[#2A37D8]">{locationName}</Text>
-            <Text className="font-inter-regular text-sm text-gray-500">
-              {/* You can add more location detail here if available */}
-            </Text>
-          </View>
-
-          <Pressable onPress={() => console.log('Edit location pressed')} className="ml-3 mt-1">
-            <FontAwesome5 name="edit" size={20} color="#9CA3AF" />
-          </Pressable>
-        </View>
-        <Image
-          source={require('@/assets/maps-mock.png')}
-          className="mb-5 h-40 w-full rounded-2xl"
-        />
+        <LocationSelector selectedLocation={selectedLocation} />
 
         {/* Kategori kerusakan as dropdown */}
         <Text className="mb-1 font-inter-medium text-sm text-gray-700">
           Kategori kerusakan <Text className="text-[#EB3030]">*</Text>
         </Text>
-        <View className="mb-5 rounded-xl border border-gray-200">
-          <Pressable
-            className="h-14 flex-row items-center justify-between px-4"
-            onPress={() => setKategoriDropdownOpen((open) => !open)}>
-            <View className="flex-row items-center">
-              <Text
-                className={`font-inter-medium text-base ${
-                  selectedKategori ? 'text-gray-950' : 'text-gray-400'
-                }`}>
-                {selectedKategori
-                  ? kategoriOptions.find((opt) => opt.value === selectedKategori)?.label
-                  : 'Pilih kategori kerusakan'}
-              </Text>
-            </View>
-            <Ionicons
-              name={kategoriDropdownOpen ? 'chevron-up' : 'chevron-down'}
-              size={20}
-              color="#717680"
-            />
-          </Pressable>
-          {kategoriDropdownOpen && (
-            <View className="rounded-b-xl border-t border-gray-100 bg-white">
-              {kategoriOptions.map((opt, idx) => {
-                const isSelected = selectedKategori === opt.value;
-                return (
-                  <Pressable
-                    key={opt.value}
-                    className={`flex-row items-center justify-between px-4 py-3 ${
-                      isSelected ? 'bg-gray-50' : ''
-                    }`}
-                    onPress={() => {
-                      setSelectedKategori(opt.value);
-                      setKategoriDropdownOpen(false);
-                    }}>
-                    <View className="flex-row items-center">
-                      {/* Individual colored circle for each option */}
-                      <View
-                        className={`mr-2 h-2 w-2 rounded-full ${
-                          idx === 0 ? 'bg-green-500' : idx === 1 ? 'bg-orange-400' : 'bg-red-500'
-                        }`}
-                      />
-                      <Text className="font-inter-medium text-base text-gray-950">{opt.label}</Text>
-                    </View>
-                    {isSelected && <Ionicons name="checkmark" size={23} color="#2A37D8" />}
-                  </Pressable>
-                );
-              })}
-            </View>
-          )}
-        </View>
+        <KategoriDropdown
+          selectedKategori={selectedKategori}
+          kategoriDropdownOpen={kategoriDropdownOpen}
+          onToggleDropdown={() => setKategoriDropdownOpen((open) => !open)}
+          onSelectKategori={(value) => {
+            setSelectedKategori(value);
+            setKategoriDropdownOpen(false);
+          }}
+        />
 
-        {/* Dampak */}
-        <Text className="mb-2 font-inter-medium text-sm text-gray-700">
-          Apakah ada dampak dari kerusakan? <Text className="text-[#EB3030]">*</Text>
-        </Text>
-        <View className="mb-5">
-          {['ya', 'tidak'].map((val) => {
-            const isSelected = adaDampak === val;
-            return (
-              <View
-                key={val}
-                className={`mb-3 flex-row items-center rounded-xl border px-3 py-4 ${
-                  isSelected ? 'border-[#2A37D8] bg-[#EBF4FF]' : 'border-gray-200'
-                }`}>
-                <Pressable
-                  onPress={() => setAdaDampak(val)}
-                  className={`mr-2 h-5 w-5 items-center justify-center rounded border ${
-                    isSelected ? 'border-blue-600 bg-blue-600' : 'border-gray-400'
-                  }`}>
-                  {isSelected && <Ionicons name="checkmark" size={12} color="#fff" />}
-                </Pressable>
-                <Text
-                  className={`font-inter-medium text-base ${
-                    isSelected ? 'text-[#2A37D8]' : 'text-gray-700'
-                  }`}>
-                  {val === 'ya' ? 'Ya' : 'Tidak'}
-                </Text>
-              </View>
-            );
-          })}
-        </View>
-
-        {adaDampak === 'ya' && (
-          <>
-            <Text className="mb-1 font-inter-medium text-sm text-gray-700">
-              Dampak Kerusakan <Text className="text-[#EB3030]">*</Text>
-            </Text>
-            <TextInput
-              className="mb-5 rounded-xl border border-gray-200 px-4 py-4 font-inter-regular text-base text-gray-950"
-              placeholder="Tuliskan dampak yang terjadi"
-              value={catatan}
-              onChangeText={setCatatan}
-            />
-          </>
-        )}
-
-        {/* Catatan */}
-        <Text className="mb-1 font-inter-medium text-sm text-gray-700">Catatan</Text>
-        <TextInput
-          className="mb-7 h-24 min-h-[131px] rounded-xl border border-gray-200 px-4 font-inter-regular text-gray-500"
-          placeholder="Masukkan catatan tambahan terkait kerusakan..."
-          multiline
-          textAlignVertical="top"
-          value={catatan}
-          onChangeText={setCatatan}
+        {/* Damage Impact and Notes Section */}
+        <DamageImpactSection
+          adaDampak={adaDampak}
+          impactDamage={impactDamage}
+          catatan={catatan}
+          onAdaDampakChange={setAdaDampak}
+          onImpactDamageChange={setImpactDamage}
+          onCatatanChange={setCatatan}
         />
       </ScrollView>
 
       {/* Fixed Bottom Buttons */}
-      <View className="absolute bottom-5 left-0 right-0 flex-row justify-between bg-transparent px-4 py-4">
-        <Pressable
-          disabled={isSubmitting}
-          onPress={handleSaveDraft}
-          className={`mr-2 flex-1 rounded-full border border-gray-300 bg-gray-50 py-3 ${
-            isSubmitting ? 'opacity-50' : ''
-          }`}>
-          <Text className="text-center font-semibold text-gray-700">
-            {isSubmitting && pendingStatus === 'draft' ? 'Menyimpan...' : 'Save as Draft'}
-          </Text>
-        </Pressable>
-        <Pressable
-          disabled={isSubmitting}
-          className={`ml-2 flex-1 rounded-full bg-[#1437B9] py-3 ${
-            isSubmitting ? 'opacity-50' : ''
-          }`}
-          onPress={handleSubmitPress}>
-          <Text className="text-center font-semibold text-white">
-            {isSubmitting && pendingStatus === 'diperiksa' ? 'Mengirim...' : 'Submit'}
-          </Text>
-        </Pressable>
-      </View>
+      <FormFooterButtons
+        isSubmitting={isSubmitting}
+        pendingStatus={pendingStatus}
+        onSaveDraft={handleSaveDraft}
+        onSubmit={handleSubmitPress}
+      />
 
       {/* Modals */}
       <BackConfirmationModal

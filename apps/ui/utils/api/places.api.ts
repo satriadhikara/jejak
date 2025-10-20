@@ -1,7 +1,7 @@
 const GOOGLE_MAPS_API_KEY = process.env.EXPO_PUBLIC_GOOGLE_MAPS_API_KEY;
 const PLACES_API_BASE_URL = 'https://places.googleapis.com/v1';
 const GEOCODING_API_BASE_URL = 'https://maps.googleapis.com/maps/api/geocode';
-const MAX_SEARCH_RADIUS_KM = 3; // Maximum search radius in kilometers
+const MAX_SEARCH_RADIUS_KM = 10; // Maximum search radius in kilometers
 
 export interface PlaceAutocomplete {
   description: string;
