@@ -1,6 +1,12 @@
 import type {
+  DamageCategory,
   GetUserReportByIdResponse,
   GetUserReportsResponse,
+  LocationGeo,
+  PhotoUrl,
+  ReportStatus,
+  StatusHistoryEntry,
+  UserReport,
 } from '@/utils/types/riwayat.types';
 
 const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL;
@@ -39,4 +45,89 @@ export const getUserReportById = async (
   }
 
   return (await response.json()) as GetUserReportByIdResponse;
+};
+
+type GetStorageReadUrlResponse = {
+  url: string;
+};
+
+type GetStorageUploadUrlResponse = {
+  url: string;
+  key: string;
+  contentType: string;
+};
+
+export type CreateReportPayload = {
+  title: string;
+  locationName: string;
+  locationGeo: LocationGeo;
+  damageCategory: DamageCategory;
+  impactOfDamage?: string;
+  description?: string;
+  photosUrls: PhotoUrl[];
+  status: ReportStatus;
+  statusHistory: StatusHistoryEntry[];
+};
+
+type CreateReportResponse = {
+  data: UserReport;
+};
+
+export const getStorageReadUrl = async (
+  cookie: string,
+  key: string
+): Promise<GetStorageReadUrlResponse> => {
+  const params = new URLSearchParams({ key });
+  const response = await fetch(`${API_BASE_URL}/api/storage?${params.toString()}`, {
+    method: 'GET',
+    headers: {
+      Cookie: cookie,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch storage read URL');
+  }
+
+  return (await response.json()) as GetStorageReadUrlResponse;
+};
+
+export const getStorageUploadUrl = async (
+  cookie: string,
+  fileName: string
+): Promise<GetStorageUploadUrlResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/storage`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookie,
+    },
+    body: JSON.stringify({ fileName }),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to get storage upload URL');
+  }
+
+  return (await response.json()) as GetStorageUploadUrlResponse;
+};
+
+export const createReport = async (
+  cookie: string,
+  payload: CreateReportPayload
+): Promise<CreateReportResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/reports`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Cookie: cookie,
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    throw new Error('Failed to create report');
+  }
+
+  return (await response.json()) as CreateReportResponse;
 };

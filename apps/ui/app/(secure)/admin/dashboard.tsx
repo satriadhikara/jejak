@@ -12,6 +12,7 @@ const dashboardStats = [
     bg: 'bg-gray-50',
     exportColor: '#4B4D53',
     image: require('../../../assets/circle-gray.png'),
+    navigateTo: '/(secure)/admin/laporanAll',
   },
   {
     value: 23,
@@ -20,6 +21,7 @@ const dashboardStats = [
     bg: 'bg-[#EBF4FF]',
     exportColor: '#2431AE',
     image: require('../../../assets/circle-blue.png'),
+    navigateTo: '/(secure)/admin/laporanNew',
   },
   {
     value: 72,
@@ -28,6 +30,7 @@ const dashboardStats = [
     bg: 'bg-[#FFFDF6]',
     exportColor: '#F79008',
     image: require('../../../assets/circle-yellow.png'),
+    navigateTo: '/(secure)/admin/laporanOnProccess',
   },
   {
     value: 121,
@@ -36,10 +39,11 @@ const dashboardStats = [
     bg: 'bg-[#F5FFFB]',
     exportColor: '#12B76A',
     image: require('../../../assets/circle-green.png'),
+    navigateTo: '/(secure)/admin/laporanDone',
   },
 ];
 
-export default function DashboardScreen() {
+export default function DashboardAdmin() {
   const router = useRouter();
 
   return (
@@ -103,7 +107,9 @@ export default function DashboardScreen() {
                 </Text>
                 <View className="flex-row items-center justify-between">
                   <Text className={`font-inter-medium text-sm ${stat.color}`}>{stat.label}</Text>
-                  <Pressable className="z-5 ml-2 rounded-full bg-white p-2">
+                  <Pressable
+                    className="z-5 ml-2 rounded-full bg-white p-2"
+                    onPress={() => stat.navigateTo && router.push(stat.navigateTo as any)}>
                     <Entypo name="export" size={18} color={stat.exportColor} />
                   </Pressable>
                 </View>
@@ -121,7 +127,9 @@ export default function DashboardScreen() {
               Ada laporan yang belum diperbarui lebih dari 7 hari. Pastikan proses penanganan tetap
               berjalan agar tidak tertunda terlalu lama.
             </Text>
-            <Pressable className="rounded-xl bg-blue-50 py-2">
+            <Pressable
+              className="rounded-xl bg-blue-50 py-2"
+              onPress={() => router.push('/(secure)/admin/laporanNotUpdated')}>
               <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
                 Lihat daftar laporan →
               </Text>
@@ -135,7 +143,9 @@ export default function DashboardScreen() {
             <Text className="mb-3 font-inter-regular text-sm text-gray-500">
               3 laporan baru menunggu peninjauan hari ini
             </Text>
-            <Pressable className="rounded-xl bg-blue-50 py-2">
+            <Pressable
+              className="rounded-xl bg-blue-50 py-2"
+              onPress={() => router.push('/(secure)/admin/laporanJustEntered')}>
               <Text className="text-center font-inter-semi-bold text-sm text-[#2431AE]">
                 Tinjau sekarang →
               </Text>

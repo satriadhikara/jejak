@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 import { zValidator } from "@hono/zod-validator";
 
 import { formatValidationResult } from "@/validators/shared";
