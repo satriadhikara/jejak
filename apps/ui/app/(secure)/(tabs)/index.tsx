@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import {
   View,
   Text,
@@ -24,29 +24,84 @@ import ReportCard from '@/components/beranda/report-card';
 import PointsCard from '@/components/beranda/points-card';
 import { Skeleton, SkeletonCircle } from '@/components/Skeleton';
 import { getUserPoints, getTopUsersByPoints } from '@/utils/api/beranda.api';
+import { getUserReports } from '@/utils/api/riwayat.api';
+import type { UserReport } from '@/utils/types/riwayat.types';
 
-const reportHistory: ReportHistoryItem[] = [
-  {
-    id: '1',
-    title: 'Kerusakan Trotoar ITB Ganesha',
-    date: '3 Oktober 2025',
-    location: 'Jl. Ganesa No.10, Lb. Siliwangi',
-    status: 'Diperiksa',
-    statusColor: '#717680',
-    statusBgColor: '#F5F5F6',
-  },
-  {
-    id: '2',
-    title: 'Kerusakan Trotoar ITB Ganesha',
-    date: '3 Oktober 2025',
-    location: 'Jl. Ganesa No.10, Lb. Siliwangi',
-    status: 'Dikonfirmasi',
-    statusColor: '#055987',
-    statusBgColor: '#F0F9FF',
-  },
-];
+type StatusDisplayConfig = {
+  label: string;
+  color: string;
+  bgColor: string;
+};
 
-// const reportHistory: ReportHistoryItem[] = [];
+const STATUS_DISPLAY: Record<UserReport['status'] | 'default', StatusDisplayConfig> = {
+  diperiksa: {
+    label: 'Diperiksa',
+    color: '#717680',
+    bgColor: '#F5F5F6',
+  },
+  dikonfirmasi: {
+    label: 'Dikonfirmasi',
+    color: '#055987',
+    bgColor: '#F0F9FF',
+  },
+  dalam_penanganan: {
+    label: 'Dalam penanganan',
+    color: '#9D530E',
+    bgColor: '#FFFBED',
+  },
+  selesai: {
+    label: 'Selesai ditangani',
+    color: '#055E3A',
+    bgColor: '#ECFEF3',
+  },
+  draft: {
+    label: 'Draft',
+    color: '#717680',
+    bgColor: '#F5F5F6',
+  },
+  ditolak: {
+    label: 'Ditolak',
+    color: '#B42318',
+    bgColor: '#FEE4E2',
+  },
+  default: {
+    label: 'Diperiksa',
+    color: '#717680',
+    bgColor: '#F5F5F6',
+  },
+};
+
+const formatReportDate = (isoString: string) => {
+  if (!isoString) {
+    return '-';
+  }
+
+  const parsedDate = new Date(isoString);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return '-';
+  }
+
+  return parsedDate.toLocaleDateString('id-ID', {
+    day: 'numeric',
+    month: 'long',
+    year: 'numeric',
+  });
+};
+
+const mapUserReportToHistoryItem = (report: UserReport): ReportHistoryItem => {
+  const config = STATUS_DISPLAY[report.status] ?? STATUS_DISPLAY.default;
+
+  return {
+    id: report.id,
+    title: report.title,
+    date: formatReportDate(report.createdAt),
+    location: report.locationName,
+    status: config.label,
+    statusColor: config.color,
+    statusBgColor: config.bgColor,
+  };
+};
 
 export default function Home() {
   const { session, cookies } = useAuthContext();
@@ -59,6 +114,12 @@ export default function Home() {
   const topUsersByPoints = useQuery<TopUsersByPointsResponse>({
     queryKey: ['topUsersByPoints', cookies, 3],
     queryFn: () => getTopUsersByPoints(cookies, 3),
+  });
+
+  const reportHistoryQuery = useQuery<Awaited<ReturnType<typeof getUserReports>>>({
+    queryKey: ['userReports', cookies, false],
+    queryFn: () => getUserReports(cookies, false),
+    enabled: Boolean(cookies),
   });
 
   if (userPoints.isError || topUsersByPoints.isError) {
@@ -100,24 +161,32 @@ export default function Home() {
         },
       ];
 
+  const reportHistory = useMemo(() => {
+    const reports = reportHistoryQuery.data?.data ?? [];
+    // Get only non-draft reports, limited to first 2
+    return reports
+      .filter((report) => report.status !== 'draft')
+      .slice(0, 2)
+      .map(mapUserReportToHistoryItem);
+  }, [reportHistoryQuery.data]);
+
   const handleCreateReport = () => {
-    // Handle create report navigation
-    console.log('Navigate to create report');
+    router.push('/(secure)/(tabs)/kamera');
   };
 
   const handleViewAllReports = () => {
-    // Handle view all reports navigation
-    console.log('Navigate to all reports');
+    router.push('/(secure)/(tabs)/riwayat');
   };
 
   const handleViewReportDetail = (reportId: string) => {
-    // Handle view report detail navigation
-    console.log('Navigate to report detail:', reportId);
+    router.push({
+      pathname: '/riwayat/[riwayatId]',
+      params: { riwayatId: reportId },
+    });
   };
 
   const handleViewAllRankings = () => {
-    // Handle view all rankings navigation
-    console.log('Navigate to all rankings');
+    router.push('/(secure)/(tabs)/peringkat');
   };
 
   const handleNavigateToProfile = () => {
@@ -132,11 +201,9 @@ export default function Home() {
         resizeMode="cover"
       />
 
-      <ScrollView
-        className="z-20 flex-1 bg-transparent"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 70 }}>
-        <View className="mt-[35px] rounded-t-[20px] bg-transparent p-4 pb-20">
+      {/* Fixed Header and Points Card */}
+      <View className="absolute top-0 left-0 right-0 z-30">
+        <View className="mt-[35px] p-4">
           {/* Header */}
           <View className="my-2 flex-row items-center justify-between px-2">
             <View
@@ -168,7 +235,14 @@ export default function Home() {
             points={userData.points}
             onCreateReport={handleCreateReport}
           />
+        </View>
+      </View>
 
+      <ScrollView
+        className="z-0 flex-1 bg-transparent"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 70, paddingTop: 200 }}>
+        <View className="rounded-t-[20px] bg-transparent p-4 pb-20">
           {/* Report History Section */}
           <View className="mt-5 flex-row items-center justify-between">
             <Text className="font-inter-semi-bold text-base text-[#242528]">Riwayat Laporanmu</Text>
@@ -222,12 +296,13 @@ export default function Home() {
           ) : (
             rankings.map((user) => <RankingCard key={user.id} user={user} />)
           )}
+
+          <Pressable
+            onPress={() => router.push('/(secure)/admin/dashboard')}
+            className="mb-20 mt-5 ml-4 flex-row items-center gap-2">
+            <Text className="font-inter-semi-bold text-base text-[#3848F4]">Admin</Text>
+          </Pressable>
         </View>
-        <Pressable
-          onPress={() => router.push('/(secure)/admin/dashboard')}
-          className="mb-20 ml-4 flex-row items-center gap-2">
-          <Text className="font-inter-semi-bold text-base text-[#3848F4]">Admin</Text>
-        </Pressable>
       </ScrollView>
     </View>
   );
