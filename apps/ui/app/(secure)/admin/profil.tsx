@@ -19,22 +19,16 @@ export default function ProfilAdmin() {
 
   const menuItemsAdmin = [
     {
-      icon: 'person-outline',
-      label: 'Edit Profil',
-      color: '#6B5AED',
-      onPress: () => router.push('/(secure)/edit-profil'),
-    },
-    {
-      icon: 'document-text-outline',
-      label: 'Draft Saya',
-      color: '#6B5AED',
-      onPress: () => {},
-    },
-    {
       icon: 'settings-outline',
       label: 'Pengaturan',
       color: '#6B5AED',
       onPress: () => {},
+    },
+    {
+      icon: 'arrow-undo-outline',
+      label: 'Beralih ke mode pengguna',
+      color: '#6B5AED',
+      onPress: () => router.replace('/(secure)/profil'),
       hideBorder: true,
     },
   ];

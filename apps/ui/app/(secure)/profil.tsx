@@ -62,10 +62,10 @@ export default function Profil() {
               />
               {role === 'admin' && (
                 <MenuItem
-                  icon="shield-checkmark-outline"
-                  label="Admin Panel"
+                  icon="arrow-redo-outline"
+                  label="Beralih ke mode admin"
                   color="#6B5AED"
-                  onPress={() => router.push('/(secure)/admin/dashboard')}
+                  onPress={() => router.replace('/(secure)/admin/dashboard')}
                 />
               )}
               <MenuItem
