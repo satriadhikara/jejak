@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import EmptyReportHistory from '@/components/beranda/empty-report-histoy';
 import ReportCard from '@/components/beranda/report-card';
@@ -11,6 +11,7 @@ import { Avatar } from 'react-native-paper';
 import { useAuthContext } from '@/lib/auth-context';
 import { useQuery } from '@tanstack/react-query';
 import { getUserReports } from '@/utils/api/riwayat.api';
+import { Skeleton } from '@/components/Skeleton';
 import type { UserReport } from '@/utils/types/riwayat.types';
 
 type StatusDisplayConfig = {
@@ -226,9 +227,38 @@ export default function RiwayatScreen() {
 
       <View className="flex-1 pb-14">
         {isLoadingReports ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="small" color="#1859F8" />
-          </View>
+          <ScrollView
+            className="px-5"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}>
+            {activeTab === 'Laporan' && (
+              <View className="mb-2 mt-2 flex-row items-center">
+                <Feather name="filter" size={22} color="#585A63" className="mr-2" />
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={{ paddingHorizontal: 0 }}>
+                  {FILTER_OPTIONS.map((item) => (
+                    <View
+                      key={item}
+                      className="mr-2 h-10 rounded-full border border-[#E5E6E8] bg-white px-4 py-2">
+                      <Skeleton width={60} height={16} />
+                    </View>
+                  ))}
+                </ScrollView>
+              </View>
+            )}
+            {/* Skeleton loading cards */}
+            {[1, 2, 3].map((i) => (
+              <View key={i} className="mt-3 rounded-xl border border-[#E5E6E8] bg-white p-4">
+                <View className="gap-2">
+                  <Skeleton width="70%" height={16} />
+                  <Skeleton width="90%" height={12} />
+                  <Skeleton width="60%" height={12} />
+                </View>
+              </View>
+            ))}
+          </ScrollView>
         ) : isErrorReports ? (
           <View className="mb-28 flex-1 items-center justify-center px-5">
             <Text className="text-center font-inter-medium text-sm text-[#B42318]">

@@ -1,11 +1,12 @@
 import React from 'react';
-import { View, Text, ScrollView, Image, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, ScrollView, Image, TouchableOpacity } from 'react-native';
 import { Avatar } from 'react-native-paper';
 import { useAuthContext } from '@/lib/auth-context';
 import { useRouter } from 'expo-router';
 import RankingCard from '@/components/beranda/ranking-card';
 import { useQuery } from '@tanstack/react-query';
 import { getTopUsersByPoints, getUserPoints } from '@/utils/api/beranda.api';
+import { Skeleton, SkeletonCircle } from '@/components/Skeleton';
 import {
   UserPointsResponse,
   TopUsersByPointsResponse,
@@ -33,9 +34,67 @@ export default function Peringkat() {
   // Show loading state
   if (topUsersRankings.isLoading || userPoints.isLoading) {
     return (
-      <View className="flex-1 items-center justify-center bg-[#0A1A2F]">
-        <ActivityIndicator size="large" color="#00D996" />
-        <Text className="mt-4 font-inter-regular text-white">Memuat peringkat...</Text>
+      <View className="relative flex-1 bg-transparent pt-10">
+        {/* Background Image */}
+        <Image
+          source={require('@/assets/ProfilBG.png')}
+          className="absolute left-0 top-0 h-full w-full"
+          resizeMode="cover"
+        />
+
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={{ paddingBottom: 40 }}
+          className="px-5">
+          {/* Header Skeleton */}
+          <View className="my-2 flex-row items-center justify-between px-4 py-4">
+            <Skeleton width={80} height={24} />
+            <SkeletonCircle size={40} />
+          </View>
+
+          {/* Top 3 section skeleton */}
+          <View className="h-[163px] flex-row items-end justify-center">
+            {/* Rank 2 */}
+            <View className="mx-3 w-24 items-center">
+              <SkeletonCircle size={80} />
+              <Skeleton width={60} height={14} className="mt-3" />
+              <Skeleton width={70} height={12} className="mt-1" />
+            </View>
+
+            {/* Rank 1 */}
+            <View className="mx-10 mb-2 w-28 items-center">
+              <SkeletonCircle size={96} />
+              <Skeleton width={80} height={16} className="mt-3" />
+              <Skeleton width={90} height={12} className="mt-1" />
+            </View>
+
+            {/* Rank 3 */}
+            <View className="mx-3 w-24 items-center">
+              <SkeletonCircle size={80} />
+              <Skeleton width={60} height={14} className="mt-3" />
+              <Skeleton width={70} height={12} className="mt-1" />
+            </View>
+          </View>
+
+          {/* Ranking list skeleton */}
+          <View className="mt-6 gap-2">
+            {[1, 2, 3, 4].map((i) => (
+              <View
+                key={i}
+                className="mt-2 rounded-xl border border-[#E5E6E8] bg-[#F5F5F6] p-3 py-4">
+                <View className="flex-row items-center gap-4">
+                  <Skeleton width={25} height={16} />
+                  <SkeletonCircle size={35} />
+                  <View className="flex-1 gap-1">
+                    <Skeleton width="50%" height={12} />
+                    <Skeleton width="40%" height={10} />
+                  </View>
+                  <Skeleton width={20} height={28} />
+                </View>
+              </View>
+            ))}
+          </View>
+        </ScrollView>
       </View>
     );
   }

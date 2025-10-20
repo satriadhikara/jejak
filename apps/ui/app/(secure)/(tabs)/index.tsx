@@ -252,7 +252,20 @@ export default function Home() {
           </View>
 
           {/* Report Cards */}
-          {reportHistory.length > 0 ? (
+          {reportHistoryQuery.isPending ? (
+            // Loading skeletons for report cards
+            <>
+              {[1, 2].map((i) => (
+                <View key={i} className="mt-3 rounded-xl border border-[#E5E6E8] bg-white p-4">
+                  <View className="gap-2">
+                    <Skeleton width="70%" height={16} />
+                    <Skeleton width="90%" height={12} />
+                    <Skeleton width="60%" height={12} />
+                  </View>
+                </View>
+              ))}
+            </>
+          ) : reportHistory.length > 0 ? (
             reportHistory.map((report) => (
               <ReportCard
                 key={report.id}
