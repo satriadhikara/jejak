@@ -23,10 +23,13 @@ export default function DropdownStatus({
   statusHistory: StatusHistoryEntry[];
   currentStatus: ReportStatus;
 }) {
-  // Sort history from newest to oldest
+  // Sort history from oldest to newest (reversed for display)
   const sortedHistory = [...statusHistory].sort(
-    (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
   );
+
+  // Reverse for display so newest is on top
+  const displayHistory = [...sortedHistory].reverse();
 
   // Format date
   const formatDate = (timestamp: string) => {
@@ -66,14 +69,14 @@ export default function DropdownStatus({
       {/* Dropdown Content */}
       {isOpen && (
         <View className="border-t border-gray-100 px-4 py-4">
-          {sortedHistory.map((item, index) => {
+          {displayHistory.map((item, index) => {
             const isActive = item.status === currentStatus;
             return (
               <View
                 key={`${item.status}-${item.timestamp}`}
                 className="relative mb-5 flex-row items-start">
                 {/* Timeline connector */}
-                {index < sortedHistory.length - 1 && (
+                {index < displayHistory.length - 1 && (
                   <View
                     style={{
                       position: 'absolute',

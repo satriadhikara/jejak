@@ -147,7 +147,10 @@ export const createAdminRouter = (
       let pointsAwarded = 0;
       let pointsReason = "";
 
-      if (currentReport.status === "diperiksa" && status === "dikonfirmasi") {
+      if (
+        currentReport.status === "diperiksa" &&
+        (status === "dikonfirmasi" || status === "dalam_penanganan")
+      ) {
         pointsAwarded = 10;
         pointsReason = "Report confirmed by admin";
       } else if (

@@ -116,25 +116,16 @@ export default function DetailRiwayat() {
   const updateStatusMutation = useMutation({
     mutationFn: async ({
       newStatus,
-      description,
+      statusHistory,
     }: {
-      newStatus: 'dikonfirmasi' | 'selesai';
-      description: string;
+      newStatus: 'dikonfirmasi' | 'dalam_penanganan' | 'selesai';
+      statusHistory: StatusHistoryEntry[];
     }) => {
       if (!reportIdString || !report) throw new Error('Report not found');
 
-      const newHistory: StatusHistoryEntry[] = [
-        ...(report.statusHistory || []),
-        {
-          status: newStatus,
-          timestamp: new Date().toISOString(),
-          description,
-        },
-      ];
-
       return updateReportStatus(cookies ?? '', reportIdString, {
         status: newStatus,
-        statusHistory: newHistory,
+        statusHistory,
       });
     },
     onSuccess: () => {
@@ -148,10 +139,26 @@ export default function DetailRiwayat() {
   });
 
   const handleConfirmReport = () => {
+    // Create history with both dikonfirmasi and dalam_penanganan
+    const now = new Date().toISOString();
+    const newHistory: StatusHistoryEntry[] = [
+      ...(report?.statusHistory || []),
+      {
+        status: 'dikonfirmasi',
+        timestamp: now,
+        description: 'Laporan dikonfirmasi oleh admin',
+      },
+      {
+        status: 'dalam_penanganan',
+        timestamp: now,
+        description: 'Laporan mulai ditangani',
+      },
+    ];
+
     updateStatusMutation.mutate(
       {
-        newStatus: 'dikonfirmasi',
-        description: 'Laporan dikonfirmasi oleh admin',
+        newStatus: 'dalam_penanganan',
+        statusHistory: newHistory,
       },
       {
         onSuccess: () => {
@@ -163,10 +170,19 @@ export default function DetailRiwayat() {
   };
 
   const handleCompleteReport = () => {
+    const newHistory: StatusHistoryEntry[] = [
+      ...(report?.statusHistory || []),
+      {
+        status: 'selesai',
+        timestamp: new Date().toISOString(),
+        description: 'Penyelesaian laporan dikonfirmasi oleh admin',
+      },
+    ];
+
     updateStatusMutation.mutate(
       {
         newStatus: 'selesai',
-        description: 'Penyelesaian laporan dikonfirmasi oleh admin',
+        statusHistory: newHistory,
       },
       {
         onSuccess: () => {
@@ -389,7 +405,7 @@ export default function DetailRiwayat() {
         onCancel={() => setShowConfirmModal(false)}
         onConfirm={handleConfirmReport}
         title="Konfirmasi Laporan"
-        description="Apakah kamu yakin ingin mengkonfirmasi laporan ini? Status akan berubah menjadi 'Dikonfirmasi' dan pelapor akan mendapat 10 poin."
+        description="Apakah kamu yakin ingin mengkonfirmasi laporan ini? Status akan berubah menjadi 'Sedang Ditangani' dan pelapor akan mendapat 10 poin."
         cancelText="Kembali"
         confirmText="Ya, Konfirmasi"
       />
