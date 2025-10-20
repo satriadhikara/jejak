@@ -72,3 +72,20 @@ export const getCompletedReports = async (
 
   return (await response.json()) as GetAllReportsResponse;
 };
+
+export const getStaleReports = async (
+  cookie: string,
+): Promise<GetAllReportsResponse> => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/reports/stale`, {
+    method: "GET",
+    headers: {
+      Cookie: cookie,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch stale reports");
+  }
+
+  return (await response.json()) as GetAllReportsResponse;
+};
