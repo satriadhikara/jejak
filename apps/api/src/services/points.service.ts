@@ -1,5 +1,5 @@
 import db from "@/db";
-import { user } from "@/db/schema";
+import { user, userPointsLog } from "@/db/schema";
 import { and, desc, eq, gt, lt, or, sql, asc } from "drizzle-orm";
 
 export type UserPoints = {
@@ -78,9 +78,65 @@ export const createPointsService = ({ db }: PointsServiceDependencies) => {
     }));
   };
 
+  const addPoints = async (
+    userId: string,
+    delta: number,
+    reason?: string,
+    referenceId?: string,
+  ): Promise<UserPoints> => {
+    // Update user points
+    const [updatedUser] = await db
+      .update(user)
+      .set({
+        points: sql`${user.points} + ${delta}`,
+      })
+      .where(eq(user.id, userId))
+      .returning({
+        points: user.points,
+        createdAt: user.createdAt,
+      });
+
+    if (!updatedUser) {
+      throw new Error("User not found");
+    }
+
+    // Log the points transaction
+    const logId = Bun.randomUUIDv7("base64url");
+    await db.insert(userPointsLog).values({
+      id: logId,
+      userId,
+      delta,
+      reason,
+      referenceId,
+    });
+
+    // Get updated rank
+    const newPoints = (updatedUser.points ?? 0) + delta;
+    const [rankData] = await db
+      .select({ count: sql<number>`count(*)::int` })
+      .from(user)
+      .where(
+        or(
+          gt(user.points, newPoints),
+          and(
+            eq(user.points, newPoints),
+            lt(user.createdAt, updatedUser.createdAt),
+          ),
+        ),
+      );
+
+    const rank = (rankData?.count ?? 0) + 1;
+
+    return {
+      points: newPoints,
+      rank,
+    };
+  };
+
   return {
     getTopUsersByPoints,
     getUserPoints,
+    addPoints,
   };
 };
 
@@ -94,4 +150,13 @@ export async function getTopUsersByPoints(
 
 export async function getUserPoints(userId: string): Promise<UserPoints> {
   return pointsService.getUserPoints(userId);
+}
+
+export async function addPoints(
+  userId: string,
+  delta: number,
+  reason?: string,
+  referenceId?: string,
+): Promise<UserPoints> {
+  return pointsService.addPoints(userId, delta, reason, referenceId);
 }
