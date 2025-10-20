@@ -201,11 +201,9 @@ export default function Home() {
         resizeMode="cover"
       />
 
-      <ScrollView
-        className="z-20 flex-1 bg-transparent"
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={{ paddingBottom: 70 }}>
-        <View className="mt-[35px] rounded-t-[20px] bg-transparent p-4 pb-20">
+      {/* Fixed Header and Points Card */}
+      <View className="absolute top-0 left-0 right-0 z-30">
+        <View className="mt-[35px] p-4">
           {/* Header */}
           <View className="my-2 flex-row items-center justify-between px-2">
             <View
@@ -237,7 +235,14 @@ export default function Home() {
             points={userData.points}
             onCreateReport={handleCreateReport}
           />
+        </View>
+      </View>
 
+      <ScrollView
+        className="z-0 flex-1 bg-transparent"
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ paddingBottom: 70, paddingTop: 200 }}>
+        <View className="rounded-t-[20px] bg-transparent p-4 pb-20">
           {/* Report History Section */}
           <View className="mt-5 flex-row items-center justify-between">
             <Text className="font-inter-semi-bold text-base text-[#242528]">Riwayat Laporanmu</Text>
@@ -291,12 +296,13 @@ export default function Home() {
           ) : (
             rankings.map((user) => <RankingCard key={user.id} user={user} />)
           )}
+
+          <Pressable
+            onPress={() => router.push('/(secure)/admin/dashboard')}
+            className="mb-20 mt-5 ml-4 flex-row items-center gap-2">
+            <Text className="font-inter-semi-bold text-base text-[#3848F4]">Admin</Text>
+          </Pressable>
         </View>
-        <Pressable
-          onPress={() => router.push('/(secure)/admin/dashboard')}
-          className="mb-20 ml-4 flex-row items-center gap-2">
-          <Text className="font-inter-semi-bold text-base text-[#3848F4]">Admin</Text>
-        </Pressable>
       </ScrollView>
     </View>
   );
