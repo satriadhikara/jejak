@@ -141,3 +141,18 @@ export const report = pgTable("report", {
     .default([])
     .notNull(),
 });
+
+export const reportCompletion = pgTable("report_completion", {
+  id: text("id").primaryKey(),
+  reportId: text("report_id")
+    .notNull()
+    .references(() => report.id, { onDelete: "cascade" }),
+  handlingDescription: text("handling_description").notNull(),
+  notes: text("notes"),
+  completionImages: jsonb("completion_images")
+    .$type<{ key: string }[]>()
+    .notNull(),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => new Date())
+    .notNull(),
+});
