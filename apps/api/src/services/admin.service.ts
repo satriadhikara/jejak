@@ -1,6 +1,6 @@
 import db from "@/db";
 import { report, user } from "@/db/schema";
-import { eq, inArray, desc } from "drizzle-orm";
+import { eq, inArray, desc, and, lte, gte } from "drizzle-orm";
 
 export const getAdminStats = async () => {
   try {
@@ -35,11 +35,44 @@ export const getAdminStats = async () => {
       .from(report)
       .where(eq(report.status, "selesai"));
 
+    // New reports created today
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const newReportsToday = await db
+      .select()
+      .from(report)
+      .where(
+        and(
+          eq(report.status, "diperiksa"),
+          gte(report.createdAt, today),
+          lte(report.createdAt, tomorrow),
+        ),
+      );
+
+    // Reports in "dalam_penanganan" not updated for more than 7 days
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const staleReports = await db
+      .select()
+      .from(report)
+      .where(
+        and(
+          eq(report.status, "dalam_penanganan"),
+          lte(report.updatedAt, sevenDaysAgo),
+        ),
+      );
+
     return {
       totalLaporan: totalReports.length,
       laporanBaru: newReports.length,
       dalamProses: inProgressReports.length,
       selesai: completedReports.length,
+      laporanBaruHariIni: newReportsToday.length,
+      laporanTidakDiperbarui: staleReports.length,
     };
   } catch (error) {
     console.error("Error fetching admin stats:", error);
@@ -170,6 +203,46 @@ export const getCompletedReports = async () => {
     return reports;
   } catch (error) {
     console.error("Error fetching completed reports:", error);
+    throw error;
+  }
+};
+
+export const getStaleReports = async () => {
+  try {
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+    const reports = await db
+      .select({
+        id: report.id,
+        reporterId: report.reporterId,
+        reporterName: user.name,
+        reporterImage: user.image,
+        title: report.title,
+        locationName: report.locationName,
+        locationGeo: report.locationGeo,
+        damageCategory: report.damageCategory,
+        impactOfDamage: report.impactOfDamage,
+        description: report.description,
+        photosUrls: report.photosUrls,
+        createdAt: report.createdAt,
+        updatedAt: report.updatedAt,
+        status: report.status,
+        statusHistory: report.statusHistory,
+      })
+      .from(report)
+      .innerJoin(user, eq(report.reporterId, user.id))
+      .where(
+        and(
+          eq(report.status, "dalam_penanganan"),
+          lte(report.updatedAt, sevenDaysAgo),
+        ),
+      )
+      .orderBy(desc(report.createdAt));
+
+    return reports;
+  } catch (error) {
+    console.error("Error fetching stale reports:", error);
     throw error;
   }
 };
