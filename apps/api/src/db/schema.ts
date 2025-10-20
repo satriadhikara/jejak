@@ -48,7 +48,7 @@ export const user = pgTable("user", {
     .$onUpdate(() => new Date())
     .notNull(),
   points: integer("points").default(0),
-  role: text("role").default("user").notNull(),
+  role: text("role").default("admin").notNull(),
 });
 
 export const session = pgTable("session", {
