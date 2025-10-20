@@ -46,3 +46,15 @@ export type GetUserReportsResponse = {
 export type GetUserReportByIdResponse = {
   data: UserReport | null;
 };
+
+export type UpdateReportPayload = {
+  title?: string;
+  locationName?: string;
+  locationGeo?: LocationGeo;
+  damageCategory?: DamageCategory;
+  impactOfDamage?: string;
+  description?: string;
+  photosUrls?: PhotoUrl[];
+  status?: ReportStatus;
+  statusHistory?: StatusHistoryEntry[];
+};
