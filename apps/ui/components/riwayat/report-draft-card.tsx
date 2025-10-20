@@ -2,29 +2,46 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { Card } from 'react-native-paper';
 import { ReportHistoryItem } from '@/utils/types/beranda.types';
 import { router } from 'expo-router';
+import type { UserReport } from '@/utils/types/riwayat.types';
 
 const ReportDraftCardRiwayat = ({
   report,
 }: {
-  report: ReportHistoryItem;
+  report: ReportHistoryItem | UserReport;
   handleViewReportDetail: (reportId: string) => void;
 }) => {
+  // Determine if this is a UserReport or ReportHistoryItem
+  const isUserReport = (obj: any): obj is UserReport => 'damageCategory' in obj;
+
+  const reportId = report.id;
+  const title = report.title;
+  const location = isUserReport(report)
+    ? report.locationName
+    : (report as ReportHistoryItem).location;
+  const date = isUserReport(report)
+    ? new Date(report.createdAt).toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      })
+    : (report as ReportHistoryItem).date;
+
   return (
     <Card
-      key={report.id}
+      key={reportId}
       className="mt-2.5 rounded-xl !bg-white"
       style={{
         padding: 4,
       }}>
       <Card.Content style={{ padding: 0, margin: 0 }} className="!m-0 !p-0">
         <View className="flex-row items-center justify-between">
-          <Text className="font-inter-medium text-base text-[#242528]">{report.title}</Text>
+          <Text className="font-inter-medium text-base text-[#242528]">{title}</Text>
           <View className="rounded-[25px] bg-gray-300 px-3 py-1">
             <Text className="font-inter-medium text-sm text-gray-50">Draf</Text>
           </View>
         </View>
         <Text className="mt-1.5 font-inter-regular text-sm text-[#ABAFB5]">
-          {report.date} • {report.location}
+          {date} • {location}
         </Text>
 
         <View className="mb-2 mt-4 h-[1px] bg-[#E5E5E5]" />
@@ -41,16 +58,7 @@ const ReportDraftCardRiwayat = ({
               router.push({
                 pathname: '/edit-draft-detail',
                 params: {
-                  id: report.id,
-                  title: report.title,
-                  location: report.location,
-                  kategori: 'berat', // mock
-                  adaDampak: 'ya', // mock
-                  catatan: 'Pejalan kaki dapat tersandung', // mock
-                  imageUris: JSON.stringify([
-                    'https://images.unsplash.com/photo-1506744038136-46273834b3fb',
-                    'https://images.unsplash.com/photo-1465101046530-73398c7f28ca',
-                  ]), // mock
+                  id: reportId,
                 },
               })
             }>

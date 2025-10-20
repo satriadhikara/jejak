@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   ActivityIndicator,
   View,
@@ -9,7 +9,7 @@ import {
   Alert,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import BackConfirmationModal from '@/components/back-confirmation-modal';
 import ConfirmationModal from '@/components/confirmation-modal';
@@ -21,6 +21,8 @@ import {
   createReport,
   updateReport,
   getStorageUploadUrl,
+  getUserReportById,
+  getStorageReadUrl,
   type CreateReportPayload,
 } from '@/utils/api/riwayat.api';
 import type {
@@ -47,6 +49,44 @@ export default function EditDraftDetail() {
   const { selectedLocation } = useLocationContext();
 
   const reportId = typeof params.id === 'string' ? params.id : null;
+  const cookieHeader = typeof cookies === 'string' ? cookies : '';
+
+  // Fetch draft data if reportId exists
+  const draftQuery = useQuery({
+    queryKey: ['draft', reportId, cookieHeader],
+    queryFn: () => getUserReportById(cookieHeader, reportId!),
+    enabled: Boolean(reportId && cookieHeader),
+  });
+
+  // Fetch image URLs for draft photos
+  const photoKeys = useMemo(() => {
+    if (!draftQuery.data?.data?.photosUrls?.length) {
+      return [];
+    }
+    return draftQuery.data.data.photosUrls
+      .map((item) => item.key)
+      .filter((key): key is string => Boolean(key));
+  }, [draftQuery.data?.data?.photosUrls]);
+
+  const photosQuery = useQuery({
+    queryKey: ['draftPhotos', reportId, photoKeys.join('|')],
+    queryFn: async () => {
+      const results: { key: string; url: string }[] = [];
+
+      for (const key of photoKeys) {
+        try {
+          const { url } = await getStorageReadUrl(cookieHeader, key);
+          results.push({ key, url });
+        } catch (error) {
+          console.warn('Failed to load draft photo', { key, error });
+        }
+      }
+
+      return results;
+    },
+    enabled: Boolean(cookieHeader && photoKeys.length > 0),
+    staleTime: 1000 * 60 * 10,
+  });
 
   const parseInitialImageUris = () => {
     if (typeof params.imageUris !== 'string') {
@@ -86,6 +126,24 @@ export default function EditDraftDetail() {
   );
   const [isUploading, setIsUploading] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<SubmitStatus | null>(null);
+
+  // Populate form with fetched draft data
+  useEffect(() => {
+    if (draftQuery.data?.data) {
+      const draft = draftQuery.data.data;
+      setNamaLaporan(draft.title);
+      setSelectedKategori(draft.damageCategory);
+      setCatatan(draft.description || '');
+      setImpactDamage(draft.impactOfDamage || '');
+      setAdaDampak(draft.impactOfDamage ? 'ya' : 'tidak');
+
+      // Use fetched image URLs from photosQuery
+      if (photosQuery.data && photosQuery.data.length > 0) {
+        const imageUrisFromStorage = photosQuery.data.map((photo) => photo.url);
+        setImageUris(imageUrisFromStorage);
+      }
+    }
+  }, [draftQuery.data, photosQuery.data]);
 
   const DEFAULT_LOCATION_GEO = selectedLocation
     ? { lat: selectedLocation.latitude, lng: selectedLocation.longitude }
@@ -190,10 +248,18 @@ export default function EditDraftDetail() {
     }
 
     const uploads: PhotoUrl[] = [];
+    const photoUrls = photosQuery.data ?? [];
 
     for (let index = 0; index < imageUris.length; index += 1) {
       const uri = imageUris[index];
       if (!uri) continue;
+
+      // Check if this is an existing photo (already has storage URL)
+      const existingPhoto = photoUrls.find((photo) => photo.url === uri);
+      if (existingPhoto) {
+        uploads.push({ key: existingPhoto.key });
+        continue;
+      }
 
       let uploadFile: ExpoFile;
       let shouldCleanup = false;
