@@ -7,6 +7,7 @@ import {
   updateReportById,
   deleteReportById,
 } from "@/services/report.service";
+import { addPoints } from "@/services/points.service";
 import {
   reportCreateBodyValidator,
   reportUpdateParamsValidator,
@@ -22,6 +23,7 @@ type ReportRouteDependencies = {
   createReport: typeof createReport;
   updateReportById: typeof updateReportById;
   deleteReportById: typeof deleteReportById;
+  addPoints: typeof addPoints;
 };
 
 const defaultDependencies: ReportRouteDependencies = {
@@ -30,6 +32,7 @@ const defaultDependencies: ReportRouteDependencies = {
   createReport,
   updateReportById,
   deleteReportById,
+  addPoints,
 };
 
 export const createReportRoute = (
@@ -90,6 +93,11 @@ export const createReportRoute = (
       status,
       statusHistory,
     });
+
+    // Award 5 points if report is submitted (not just saved as draft)
+    if (status === "diperiksa") {
+      await deps.addPoints(user.id, 5, "Report submission reward", reportId);
+    }
 
     return c.json({
       data: report,

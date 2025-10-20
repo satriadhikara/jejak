@@ -2,18 +2,24 @@ import {
   pointsTopQueryValidator,
   type PointsTopQuery,
 } from "@/validators/points.validator";
-import { getTopUsersByPoints, getUserPoints } from "@/services/points.service";
+import {
+  getTopUsersByPoints,
+  getUserPoints,
+  addPoints,
+} from "@/services/points.service";
 import { createRouter } from "@/lib/create-router";
 import { requireAuth } from "@/middlewares/require-auth";
 
 type PointsRouteDependencies = {
   getTopUsersByPoints: typeof getTopUsersByPoints;
   getUserPoints: typeof getUserPoints;
+  addPoints: typeof addPoints;
 };
 
 const defaultDependencies: PointsRouteDependencies = {
   getTopUsersByPoints,
   getUserPoints,
+  addPoints,
 };
 
 export const createPointsRouter = (
@@ -35,6 +41,28 @@ export const createPointsRouter = (
     const user = c.get("user")!;
 
     const points = await deps.getUserPoints(user.id);
+
+    return c.json({ data: points });
+  });
+
+  router.post("/add", async (c) => {
+    const user = c.get("user")!;
+    const body = await c.req.json<{
+      delta: number;
+      reason?: string;
+      referenceId?: string;
+    }>();
+
+    const { delta, reason, referenceId } = body;
+
+    if (!delta || typeof delta !== "number" || delta <= 0) {
+      return c.json(
+        { error: "Invalid delta. Must be a positive number." },
+        400,
+      );
+    }
+
+    const points = await deps.addPoints(user.id, delta, reason, referenceId);
 
     return c.json({ data: points });
   });
