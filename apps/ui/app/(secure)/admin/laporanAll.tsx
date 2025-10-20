@@ -1,56 +1,24 @@
 import React, { useMemo, useState } from 'react';
-import { View, Text, TextInput, ScrollView, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, TextInput, ScrollView, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import EmptyReportHistory from '@/components/beranda/empty-report-histoy';
 import ReportCard from '@/components/admin/report-card'; // ✅ uses your new card
 import { ReportHistoryItem } from '@/utils/types/beranda.types';
 import Feather from '@expo/vector-icons/Feather';
 import { useRouter } from 'expo-router';
+import { useAuthContext } from '@/lib/auth-context';
+import { useQuery } from '@tanstack/react-query';
+import { getAllReports } from '@/utils/api/admin.api';
+import type { AdminReport } from '@/utils/types/admin.types';
+import { Skeleton } from '@/components/Skeleton';
 
-const MOCK_REPORTS = [
-  {
-    id: '1',
-    title: 'Kerusakan Trotoar ITB Ganesha',
-    createdAt: '2025-10-03T10:00:00Z',
-    locationName: 'Jl. Ganesa No.10, Lb. Siliwangi jsbahubfhasbfhabfhabfsabfa',
-    status: 'diperiksa',
-    reporterName: 'Sarah Mahendra',
-    reporterImage: 'https://i.pravatar.cc/150?img=47',
-    severity: 'Ringan',
-  },
-  {
-    id: '2',
-    title: 'Lampu Lalu Lintas Mati',
-    createdAt: '2025-09-25T09:00:00Z',
-    locationName: 'Jl. Sudirman',
-    status: 'dikonfirmasi',
-    reporterName: 'Dimas Wiratama',
-    reporterImage: 'https://i.pravatar.cc/150?img=22',
-    severity: 'Sedang',
-  },
-  {
-    id: '3',
-    title: 'Pohon Tumbang Menutupi Jalan',
-    createdAt: '2025-09-20T16:00:00Z',
-    locationName: 'Jl. Ahmad Yani',
-    status: 'dalam_penanganan',
-    reporterName: 'Ayu Pertiwi',
-    reporterImage: 'https://i.pravatar.cc/150?img=12',
-    severity: 'Berat',
-  },
-  {
-    id: '4',
-    title: 'Sampah Menumpuk di Trotoar',
-    createdAt: '2025-09-18T07:00:00Z',
-    locationName: 'Jl. Kebon Jeruk',
-    status: 'selesai',
-    reporterName: 'Rudi Santoso',
-    reporterImage: 'https://i.pravatar.cc/150?img=40',
-    severity: 'Ringan',
-  },
-];
+type StatusDisplayConfig = {
+  label: string;
+  color: string;
+  bgColor: string;
+};
 
-const STATUS_DISPLAY = {
+const STATUS_DISPLAY: Record<AdminReport['status'] | 'default', StatusDisplayConfig> = {
   diperiksa: {
     label: 'Belum diperiksa',
     color: '#717680',
@@ -71,6 +39,16 @@ const STATUS_DISPLAY = {
     color: '#055E3A',
     bgColor: '#ECFEF3',
   },
+  draft: {
+    label: 'Draft',
+    color: '#717680',
+    bgColor: '#F5F5F6',
+  },
+  ditolak: {
+    label: 'Ditolak',
+    color: '#B42318',
+    bgColor: '#FEE4E2',
+  },
   default: {
     label: 'Belum diperiksa',
     color: '#717680',
@@ -86,8 +64,23 @@ const FILTER_OPTIONS = [
   'Selesai ditangani',
 ];
 
+const SEVERITY_DISPLAY: Record<AdminReport['damageCategory'], 'Ringan' | 'Sedang' | 'Berat'> = {
+  berat: 'Berat',
+  sedang: 'Sedang',
+  ringan: 'Ringan',
+};
+
 const formatReportDate = (isoString: string) => {
+  if (!isoString) {
+    return '-';
+  }
+
   const parsedDate = new Date(isoString);
+
+  if (Number.isNaN(parsedDate.getTime())) {
+    return '-';
+  }
+
   return parsedDate.toLocaleDateString('id-ID', {
     day: 'numeric',
     month: 'long',
@@ -95,35 +88,49 @@ const formatReportDate = (isoString: string) => {
   });
 };
 
+const mapAdminReportToHistoryItem = (report: AdminReport): ReportHistoryItem => {
+  const config = STATUS_DISPLAY[report.status] ?? STATUS_DISPLAY.default;
+
+  return {
+    id: report.id,
+    title: report.title,
+    date: formatReportDate(report.createdAt),
+    location: report.locationName,
+    status: config.label,
+    statusColor: config.color,
+    statusBgColor: config.bgColor,
+    reporterName: report.reporterName,
+    reporterImage: report.reporterImage ?? undefined,
+    severity: SEVERITY_DISPLAY[report.damageCategory],
+  };
+};
+
 export default function LaporanAll() {
   const router = useRouter();
+  const { cookies } = useAuthContext();
   const [filter, setFilter] = useState('Semua');
   const [searchQuery, setSearchQuery] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
 
-  const mappedReports: ReportHistoryItem[] = useMemo(
-    () =>
-      MOCK_REPORTS.map((report) => {
-        const cfg =
-          STATUS_DISPLAY[report.status as keyof typeof STATUS_DISPLAY] ?? STATUS_DISPLAY.default;
-        return {
-          id: report.id,
-          title: report.title,
-          date: formatReportDate(report.createdAt),
-          location: report.locationName,
-          status: cfg.label,
-          statusColor: cfg.color,
-          statusBgColor: cfg.bgColor,
-          reporterName: report.reporterName,
-          reporterImage: report.reporterImage,
-          severity: report.severity,
-        };
-      }),
-    []
-  );
+  const allReportsQuery = useQuery<Awaited<ReturnType<typeof getAllReports>>>({
+    queryKey: ['adminReports', cookies],
+    queryFn: () => getAllReports(cookies),
+    enabled: Boolean(cookies),
+  });
+
+  const isLoadingReports = allReportsQuery.isPending;
+  const isErrorReports = allReportsQuery.isError;
+  const errorMessage =
+    allReportsQuery.error instanceof Error
+      ? allReportsQuery.error.message
+      : 'Terjadi kesalahan saat memuat laporan.';
+
+  const reports = useMemo(() => {
+    const allReports = allReportsQuery.data?.data ?? [];
+    return allReports.map(mapAdminReportToHistoryItem);
+  }, [allReportsQuery.data]);
 
   const filteredByStatus =
-    filter !== 'Semua' ? mappedReports.filter((r) => r.status === filter) : mappedReports;
+    filter !== 'Semua' ? reports.filter((r) => r.status === filter) : reports;
 
   const filteredReports = filteredByStatus.filter(
     (r) =>
@@ -187,9 +194,42 @@ export default function LaporanAll() {
 
       {/* Content */}
       <View className="flex-1 pb-14">
-        {isLoading ? (
-          <View className="flex-1 items-center justify-center">
-            <ActivityIndicator size="small" color="#1859F8" />
+        {isLoadingReports ? (
+          <ScrollView
+            className="px-5"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 100, flexGrow: 1 }}>
+            <View className="mb-2 mt-1 flex-row items-center">
+              <Feather name="filter" size={22} color="#585A63" className="mr-2" />
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingHorizontal: 0 }}>
+                {FILTER_OPTIONS.map((item) => (
+                  <View
+                    key={item}
+                    className="mr-2 h-10 rounded-full border border-[#E5E6E8] bg-white px-4 py-2">
+                    <Skeleton width={60} height={16} />
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+            {/* Skeleton loading cards */}
+            {[1, 2, 3].map((i) => (
+              <View key={i} className="mt-3 rounded-xl border border-[#E5E6E8] bg-white p-4">
+                <View className="gap-2">
+                  <Skeleton width="70%" height={16} />
+                  <Skeleton width="90%" height={12} />
+                  <Skeleton width="60%" height={12} />
+                </View>
+              </View>
+            ))}
+          </ScrollView>
+        ) : isErrorReports ? (
+          <View className="mb-28 flex-1 items-center justify-center px-5">
+            <Text className="text-center font-inter-medium text-sm text-[#B42318]">
+              {errorMessage}
+            </Text>
           </View>
         ) : (
           <ScrollView
