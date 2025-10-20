@@ -1,21 +1,23 @@
-import React, { useRef, useState, useEffect, useCallback } from 'react';
-import { Text, View, StyleSheet, Pressable, Alert, ActivityIndicator } from 'react-native';
+import React, { useRef, useState, useEffect } from 'react';
+import { Text, View, StyleSheet, Alert, ActivityIndicator } from 'react-native';
 import { GoogleMaps } from 'expo-maps';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'expo-image';
 import * as Location from 'expo-location';
-import { useQuery } from '@tanstack/react-query';
 import ErrorComponent from '@/components/error';
 import LocationSearchBottomSheet from '@/components/location-search/LocationSearchBottomSheet';
-import { getDirections } from '@/utils/api/places.api';
 import AnalyzeResultBottomSheet from '@/components/analyze/AnalyzeResultBottomSheet';
-import { analyzeRoute } from '@/utils/api/maps.api';
-import type { AnalyzeSuccessResponse } from '@/utils/types/maps.types';
+import MapControls from '@/components/pindai/MapControls';
+import CurrentLocationButton from '@/components/pindai/CurrentLocationButton';
+import RouteInfoBadge from '@/components/pindai/RouteInfoBadge';
+import { useLocationPermission } from '@/hooks/useLocationPermission';
+import { useCameraManager } from '@/hooks/useCameraManager';
+import { useRouteAnalysis } from '@/hooks/useRouteAnalysis';
+import { useAuthContext } from '@/lib/auth-context';
 
 export default function Pindai() {
+  const { cookies } = useAuthContext();
   const mapRef = useRef<any>(null);
   const [isSearchModalVisible, setIsSearchModalVisible] = useState(false);
-  const [hasLocationPermission, setHasLocationPermission] = useState<boolean | null>(null);
   const [searchMode, setSearchMode] = useState<'origin' | 'destination'>('origin');
   const [selectedOrigin, setSelectedOrigin] = useState<{
     latitude: number;
@@ -30,210 +32,55 @@ export default function Pindai() {
     mainText: string;
   } | null>(null);
   const [isResultModalVisible, setIsResultModalVisible] = useState(false);
-  const [analysisStatus, setAnalysisStatus] = useState<'idle' | 'loading' | 'success' | 'error'>(
-    'idle'
+  const [_isMapLoaded, setIsMapLoaded] = useState(false);
+
+  // Use custom hooks
+  const hasLocationPermission = useLocationPermission();
+  const { setCameraPositionSafely, cleanup: cleanupCamera } = useCameraManager(mapRef);
+  const {
+    routeData,
+    isLoadingRoute,
+    routeError,
+    analysisStatus,
+    analysisResult,
+    analysisError,
+    handleRetryAnalysis,
+    cleanup: cleanupAnalysis,
+  } = useRouteAnalysis(selectedOrigin, selectedDestination, cookies);
+
+  // Fetch user location on permission grant
+  const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(
+    null
   );
-  const [analysisResult, setAnalysisResult] = useState<AnalyzeSuccessResponse | null>(null);
-  const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const analysisAbortController = useRef<AbortController | null>(null);
-  const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const pendingCameraUpdate = useRef<any>(null);
-  const lastAppliedCameraConfig = useRef<any>(null);
-
-  const cameraConfigsAreEqual = useCallback((first: any, second: any) => {
-    if (!first || !second) {
-      return false;
-    }
-
-    const firstCoordinates = first.coordinates;
-    const secondCoordinates = second.coordinates;
-
-    const coordinatesMatch =
-      firstCoordinates &&
-      secondCoordinates &&
-      firstCoordinates.latitude === secondCoordinates.latitude &&
-      firstCoordinates.longitude === secondCoordinates.longitude;
-
-    return (
-      coordinatesMatch &&
-      first.zoom === second.zoom &&
-      first.tilt === second.tilt &&
-      first.bearing === second.bearing
-    );
-  }, []);
-
-  const isCameraAnimationCancellation = (error: unknown): boolean => {
-    const containsCancellation = (value: unknown): boolean => {
-      if (!value) {
-        return false;
-      }
-
-      if (typeof value === 'string') {
-        return value.toLowerCase().includes('cancel');
-      }
-
-      if (typeof value === 'object') {
-        const objectValue = value as { message?: unknown; cause?: unknown };
-        if (containsCancellation(objectValue.message)) {
-          return true;
-        }
-        if (containsCancellation(objectValue.cause)) {
-          return true;
-        }
-      }
-
-      return String(value).toLowerCase().includes('cancel');
-    };
-
-    return containsCancellation(error);
-  };
-
-  const applyCameraPosition = useCallback((config: any) => {
-    if (!mapRef.current) {
-      pendingCameraUpdate.current = config;
-      return;
-    }
-
-    try {
-      const maybePromise = mapRef.current.setCameraPosition(config);
-
-      if (
-        maybePromise &&
-        typeof maybePromise === 'object' &&
-        typeof (maybePromise as Promise<void>).then === 'function' &&
-        typeof (maybePromise as Promise<void>).catch === 'function'
-      ) {
-        (maybePromise as Promise<void>).catch((error: unknown) => {
-          if (isCameraAnimationCancellation(error)) {
-            return;
-          }
-          console.error('Failed to set camera position:', error);
-        });
-      }
-
-      lastAppliedCameraConfig.current = config;
-    } catch (error) {
-      if (isCameraAnimationCancellation(error)) {
-        return;
-      }
-      console.error('Failed to set camera position:', error);
-    }
-  }, []);
-
-  const flushPendingCameraUpdate = useCallback(() => {
-    if (!isMapLoaded || !mapRef.current || !pendingCameraUpdate.current) {
-      return;
-    }
-
-    const config = pendingCameraUpdate.current;
-    pendingCameraUpdate.current = null;
-    applyCameraPosition(config);
-  }, [applyCameraPosition, isMapLoaded]);
-
-  const setCameraPositionSafely = useCallback(
-    (config: any) => {
-      const normalizedConfig = {
-        ...config,
-        animationDuration: config?.animationDuration ?? 0,
-      };
-
-      if (
-        (pendingCameraUpdate.current &&
-          cameraConfigsAreEqual(pendingCameraUpdate.current, normalizedConfig)) ||
-        (lastAppliedCameraConfig.current &&
-          cameraConfigsAreEqual(lastAppliedCameraConfig.current, normalizedConfig))
-      ) {
-        return;
-      }
-
-      pendingCameraUpdate.current = normalizedConfig;
-      flushPendingCameraUpdate();
-    },
-    [cameraConfigsAreEqual, flushPendingCameraUpdate]
-  );
+  const [isLoadingLocation, setIsLoadingLocation] = useState(false);
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   useEffect(() => {
-    flushPendingCameraUpdate();
-  }, [flushPendingCameraUpdate]);
+    if (hasLocationPermission !== true) return;
 
-  // Check and request location permission when component mounts
-  useEffect(() => {
-    const setupLocationPermission = async () => {
+    const fetchUserLocation = async () => {
       try {
-        // First check if permission is already granted
-        const { status: existingStatus } = await Location.getForegroundPermissionsAsync();
-
-        if (existingStatus === 'granted') {
-          setHasLocationPermission(true);
-          return;
-        }
-
-        // If not granted, request permission
-        const { status } = await Location.requestForegroundPermissionsAsync();
-        setHasLocationPermission(status === 'granted');
-
-        if (status !== 'granted') {
-          console.log('Location permission denied');
-        }
+        setIsLoadingLocation(true);
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.High,
+        });
+        setUserLocation({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+        setLocationError(null);
       } catch (error) {
-        console.error('Error setting up location permission:', error);
-        setHasLocationPermission(false);
+        console.error('Error fetching user location:', error);
+        setLocationError('Failed to get your location');
+      } finally {
+        setIsLoadingLocation(false);
       }
     };
 
-    setupLocationPermission();
-  }, []);
-
-  // Fetch user location using TanStack Query
-  const {
-    data: userLocation,
-    isLoading: isLoadingLocation,
-    error: locationError,
-    refetch: refetchUserLocation,
-  } = useQuery({
-    queryKey: ['userLocation'],
-    queryFn: async () => {
-      const location = await Location.getCurrentPositionAsync({
-        accuracy: Location.Accuracy.High,
-      });
-
-      return {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-    },
-    enabled: hasLocationPermission === true,
-    staleTime: 5 * 60 * 1000, // Consider location fresh for 5 minutes
-    retry: 2,
-  });
-
-  // Fetch route using Google Routes API v2 when both origin and destination are selected
-  const {
-    data: routeData,
-    isLoading: isLoadingRoute,
-    error: routeError,
-  } = useQuery({
-    queryKey: ['routes', selectedOrigin, selectedDestination],
-    queryFn: async () => {
-      if (!selectedOrigin || !selectedDestination) return null;
-      return await getDirections(
-        {
-          latitude: selectedOrigin.latitude,
-          longitude: selectedOrigin.longitude,
-        },
-        {
-          latitude: selectedDestination.latitude,
-          longitude: selectedDestination.longitude,
-        }
-      );
-    },
-    enabled: !!selectedOrigin && !!selectedDestination,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 1,
-  });
+    fetchUserLocation();
+  }, [hasLocationPermission]);
 
   const handleCurrentLocation = async () => {
-    // Check if permission is already granted
     if (hasLocationPermission !== true) {
       Alert.alert(
         'Permission Required',
@@ -242,23 +89,25 @@ export default function Pindai() {
       return;
     }
 
-    // Attempt to refetch the user's location for the latest coordinates
-    const { data: latestLocation } = await refetchUserLocation();
-    const coordinates = latestLocation ?? userLocation;
-
-    if (!coordinates) {
+    try {
+      setIsLoadingLocation(true);
+      const location = await Location.getCurrentPositionAsync({
+        accuracy: Location.Accuracy.High,
+      });
+      const coordinates = {
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+      };
+      setUserLocation(coordinates);
+      setCameraPositionSafely({
+        coordinates,
+        zoom: 17,
+      });
+    } catch {
       Alert.alert('Error', 'Unable to get your location. Please try again.');
-      return;
+    } finally {
+      setIsLoadingLocation(false);
     }
-
-    // Move camera to the freshest known user location
-    setCameraPositionSafely({
-      coordinates: {
-        latitude: coordinates.latitude,
-        longitude: coordinates.longitude,
-      },
-      zoom: 17,
-    });
   };
 
   const handleOriginPress = () => {
@@ -284,17 +133,12 @@ export default function Pindai() {
     }
   };
 
+  // Close result modal when origin or destination changes
   useEffect(() => {
-    if (!selectedOrigin || !selectedDestination) {
-      analysisAbortController.current?.abort();
-      analysisAbortController.current = null;
-      setAnalysisStatus('idle');
-      setAnalysisResult(null);
-      setAnalysisError(null);
-      setIsResultModalVisible(false);
-    }
+    setIsResultModalVisible(false);
   }, [selectedOrigin, selectedDestination]);
 
+  // Update camera when locations change
   useEffect(() => {
     if (!selectedOrigin && !selectedDestination) {
       return;
@@ -343,140 +187,20 @@ export default function Pindai() {
     });
   }, [selectedDestination, selectedOrigin, setCameraPositionSafely]);
 
-  const runAnalysis = useCallback(() => {
-    if (!selectedOrigin || !selectedDestination || !routeData) {
-      return;
-    }
-
-    const { distanceMeters, durationSeconds, coordinates } = routeData;
-
-    if (
-      typeof distanceMeters !== 'number' ||
-      Number.isNaN(distanceMeters) ||
-      typeof durationSeconds !== 'number' ||
-      Number.isNaN(durationSeconds) ||
-      !Array.isArray(coordinates) ||
-      coordinates.length === 0
-    ) {
-      // console.log("[Analyze] Skipping analysis, invalid route data", {
-      //   distanceMeters,
-      //   durationSeconds,
-      //   hasCoordinates: Array.isArray(coordinates),
-      //   coordinatesLength: coordinates?.length ?? 0,
-      // });
-      return;
-    }
-
-    const controller = new AbortController();
-    analysisAbortController.current?.abort();
-    analysisAbortController.current = controller;
-
-    setIsResultModalVisible(true);
-    setAnalysisStatus('loading');
-    setAnalysisResult(null);
-    setAnalysisError(null);
-
-    const payload = {
-      origin: {
-        latitude: selectedOrigin.latitude,
-        longitude: selectedOrigin.longitude,
-        label: selectedOrigin.mainText || selectedOrigin.address,
-      },
-      destination: {
-        latitude: selectedDestination.latitude,
-        longitude: selectedDestination.longitude,
-        label: selectedDestination.mainText || selectedDestination.address,
-      },
-      route: {
-        coordinates: coordinates.map((coord) => ({
-          latitude: coord.latitude,
-          longitude: coord.longitude,
-        })),
-        distance: distanceMeters,
-        duration: durationSeconds,
-      },
-    };
-
-    // console.log("[Analyze] Starting analysis", {
-    //   payload,
-    //   routeDistanceReadable: routeData.distance,
-    //   routeDurationReadable: routeData.duration,
-    // });
-
-    analyzeRoute(payload, { signal: controller.signal })
-      .then((response) => {
-        if (controller.signal.aborted) return;
-        if (response.status === 'ok') {
-          console.log('[Analyze] Success response', {
-            summary: response.summary,
-            cardsCount: response.cards?.length ?? 0,
-            noticesCount: response.notices?.length ?? 0,
-            meta: response.meta,
-          });
-          setAnalysisStatus('success');
-          setAnalysisResult(response);
-        } else {
-          console.log('[Analyze] Error response', response);
-          setAnalysisStatus('error');
-          setAnalysisError(response.message);
-        }
-      })
-      .catch((error) => {
-        if (controller.signal.aborted) return;
-        console.error('[Analyze] Request failed', error);
-        setAnalysisStatus('error');
-        setAnalysisError(error.message ?? 'Gagal menganalisis rute. Coba lagi nanti.');
-      });
-  }, [routeData, selectedDestination, selectedOrigin]);
-
+  // Show result modal when analysis finishes
   useEffect(() => {
-    if (!selectedOrigin || !selectedDestination) {
-      return;
+    if (analysisStatus !== 'idle' && !isResultModalVisible) {
+      setIsResultModalVisible(true);
     }
+  }, [analysisStatus]);
 
-    if (routeError) {
-      console.error('[Analyze] Route fetch error, analysis aborted', routeError);
-      analysisAbortController.current?.abort();
-      analysisAbortController.current = null;
-      setAnalysisStatus('error');
-      setAnalysisResult(null);
-      setAnalysisError('Gagal memuat rute. Analisis tidak dapat dilakukan.');
-      return;
-    }
-
-    // if (isLoadingRoute) {
-    //   console.log("[Analyze] Waiting for route data before analysis");
-    //   return;
-    // }
-
-    // if (!routeData) {
-    //   console.log("[Analyze] No route data available, skipping analysis");
-    //   return;
-    // }
-
-    runAnalysis();
-
-    return () => {
-      analysisAbortController.current?.abort();
-      analysisAbortController.current = null;
-    };
-  }, [isLoadingRoute, routeData, routeError, runAnalysis, selectedDestination, selectedOrigin]);
-
-  const handleRetryAnalysis = useCallback(() => {
-    if (!routeData || isLoadingRoute || routeError) {
-      return;
-    }
-    runAnalysis();
-  }, [isLoadingRoute, routeData, routeError, runAnalysis]);
-
+  // Cleanup on unmount
   useEffect(() => {
     return () => {
-      analysisAbortController.current?.abort();
-      analysisAbortController.current = null;
-      pendingCameraUpdate.current = null;
-      lastAppliedCameraConfig.current = null;
+      cleanupCamera();
+      cleanupAnalysis();
     };
-  }, []);
+  }, [cleanupCamera, cleanupAnalysis]);
 
   if (hasLocationPermission === null || (hasLocationPermission === true && isLoadingLocation)) {
     return (
@@ -580,71 +304,25 @@ export default function Pindai() {
         }
       />
       <SafeAreaView className="flex-1" pointerEvents="box-none">
-        <View className="mx-4 mt-8 flex-row items-center gap-[10px] rounded-2xl border border-[#E5E6E8] bg-white px-4">
-          <View>
-            <Image source={require('../../../assets/map.png')} style={{ width: 24, height: 74 }} />
-          </View>
+        <MapControls
+          selectedOrigin={selectedOrigin}
+          selectedDestination={selectedDestination}
+          onOriginPress={handleOriginPress}
+          onDestinationPress={handleDestinationPress}
+        />
 
-          <View className="flex-1">
-            <Pressable onPress={handleOriginPress} className="py-4 pl-2 pr-4">
-              <Text
-                className="font-inter-medium text-sm"
-                style={{ color: selectedOrigin ? '#1A1A1A' : '#ABAFB5' }}
-                numberOfLines={1}>
-                {selectedOrigin ? selectedOrigin.mainText : 'Cari titik awal'}
-              </Text>
-            </Pressable>
-            <View className="h-[1px] w-full rounded-full bg-[#E5E6E8]" />
-            <Pressable onPress={handleDestinationPress} className="py-4 pl-2 pr-4">
-              <Text
-                className="font-inter-medium text-sm"
-                style={{ color: selectedDestination ? '#1A1A1A' : '#ABAFB5' }}
-                numberOfLines={1}>
-                {selectedDestination ? selectedDestination.mainText : 'Cari titik tujuan'}
-              </Text>
-            </Pressable>
-          </View>
-        </View>
-
-        <Pressable
-          className="absolute bottom-44 right-8 items-center rounded-[10px] bg-white p-3"
-          onPress={handleCurrentLocation}>
-          <View>
-            <Image
-              source={require('../../../assets/icons/cursor.svg')}
-              style={{ width: 20, height: 20 }}
-            />
-          </View>
-        </Pressable>
+        <CurrentLocationButton onPress={handleCurrentLocation} />
 
         {/* Route Info Badge */}
         {selectedOrigin && selectedDestination && (
-          <View className="absolute bottom-40 left-4 right-4 items-center">
-            <View className="rounded-2xl bg-white px-4 py-3 shadow-sm">
-              {isLoadingRoute ? (
-                <View className="flex-row items-center gap-2">
-                  <ActivityIndicator size="small" color="#5572FF" />
-                  <Text className="font-inter-medium text-sm text-[#1A1A1A]">Mencari rute...</Text>
-                </View>
-              ) : routeError ? (
-                <Text className="font-inter-medium text-sm text-red-500">Gagal memuat rute</Text>
-              ) : (
-                routeData &&
-                selectedOrigin &&
-                selectedDestination &&
-                analysisStatus !== 'idle' &&
-                !isResultModalVisible && (
-                  <Pressable onPress={() => setIsResultModalVisible(true)}>
-                    <Text className="font-inter-semibold text-base text-[#5572FF]">
-                      {analysisStatus === 'success'
-                        ? 'Lihat hasil analisis'
-                        : 'Lihat status analisis'}
-                    </Text>
-                  </Pressable>
-                )
-              )}
-            </View>
-          </View>
+          <RouteInfoBadge
+            isLoadingRoute={isLoadingRoute}
+            routeError={routeError}
+            analysisStatus={analysisStatus}
+            isResultModalVisible={isResultModalVisible}
+            hasRouteData={!!routeData}
+            onShowResults={() => setIsResultModalVisible(true)}
+          />
         )}
       </SafeAreaView>
 
