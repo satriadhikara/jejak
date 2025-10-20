@@ -13,6 +13,7 @@ import { useMutation, useQueryClient, useQuery } from '@tanstack/react-query';
 import { useRouter, useLocalSearchParams } from 'expo-router';
 import BackConfirmationModal from '@/components/back-confirmation-modal';
 import ConfirmationModal from '@/components/confirmation-modal';
+import RewardModal from '@/components/reward-modal';
 import FontAwesome from '@expo/vector-icons/FontAwesome';
 import { File as ExpoFile, Paths } from 'expo-file-system';
 import { useAuthContext } from '@/lib/auth-context';
@@ -126,6 +127,7 @@ export default function EditDraftDetail() {
   );
   const [isUploading, setIsUploading] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<SubmitStatus | null>(null);
+  const [showRewardModal, setShowRewardModal] = useState(false);
 
   // Populate form with fetched draft data
   useEffect(() => {
@@ -369,22 +371,22 @@ export default function EditDraftDetail() {
 
       await createReportMutation.mutateAsync({ cookie: cookieHeader, payload });
 
-      Alert.alert(
-        status === 'draft' ? 'Draft tersimpan' : 'Laporan terkirim',
-        status === 'draft'
-          ? reportId
-            ? 'Draft berhasil diperbarui.'
-            : 'Laporan berhasil disimpan sebagai draft.'
-          : reportId
-            ? 'Perubahan laporan berhasil dikirim untuk diperiksa.'
-            : 'Laporan berhasil dikirim untuk diperiksa.',
-        [
-          {
-            text: 'OK',
-            onPress: () => router.replace('/(secure)/(tabs)/riwayat'),
-          },
-        ]
-      );
+      // Show reward modal only when submitting (not saving as draft)
+      if (status === 'diperiksa') {
+        setShowRewardModal(true);
+      } else {
+        Alert.alert(
+          'Draft tersimpan',
+          reportId ? 'Draft berhasil diperbarui.' : 'Laporan berhasil disimpan sebagai draft.',
+          [
+            {
+              text: 'OK',
+              onPress: () => router.replace('/(secure)/(tabs)/riwayat'),
+            },
+          ]
+        );
+      }
+
       setIsDirty(false);
     } catch (error) {
       console.error('Failed to submit report', error);
@@ -560,6 +562,15 @@ export default function EditDraftDetail() {
         description="Pastikan seluruh data kerusakan yang dimasukkan sudah benar sebelum dikirimkan."
         cancelText="Kembali"
         confirmText="Kirim"
+      />
+
+      <RewardModal
+        visible={showRewardModal}
+        onDismiss={() => {
+          setShowRewardModal(false);
+          router.replace('/(secure)/(tabs)/riwayat');
+        }}
+        points={5}
       />
 
       {isSubmitting && (
