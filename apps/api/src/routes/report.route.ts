@@ -4,21 +4,23 @@ import {
   getUserReportById,
   getUserReports,
   createReport,
+  updateReportById,
   deleteReportById,
 } from "@/services/report.service";
 import {
   reportCreateBodyValidator,
+  reportUpdateParamsValidator,
+  reportUpdateBodyValidator,
   reportDeleteParamsValidator,
   reportGetQueryValidator,
   reportGetParamsValidator,
-  // reportUpdateBodyValidator,
-  // reportUpdateParamsValidator,
 } from "@/validators/report.validator";
 
 type ReportRouteDependencies = {
   getUserReports: typeof getUserReports;
   getUserReportById: typeof getUserReportById;
   createReport: typeof createReport;
+  updateReportById: typeof updateReportById;
   deleteReportById: typeof deleteReportById;
 };
 
@@ -26,6 +28,7 @@ const defaultDependencies: ReportRouteDependencies = {
   getUserReports,
   getUserReportById,
   createReport,
+  updateReportById,
   deleteReportById,
 };
 
@@ -93,14 +96,42 @@ export const createReportRoute = (
     });
   });
 
-  // router.patch(
-  //   "/:id",
-  //   reportUpdateParamsValidator,
-  //   reportUpdateBodyValidator,
-  //   async (c) => {
-  //     const user = c.get("user")!;
-  //   },
-  // );
+  router.patch(
+    "/:id",
+    reportUpdateParamsValidator,
+    reportUpdateBodyValidator,
+    async (c) => {
+      const user = c.get("user")!;
+      const { id } = c.req.valid("param");
+      const {
+        title,
+        locationName,
+        locationGeo,
+        damageCategory,
+        impactOfDamage,
+        description,
+        photosUrls,
+        status,
+        statusHistory,
+      } = c.req.valid("json");
+
+      const report = await deps.updateReportById(id, user.id, {
+        title,
+        locationName,
+        locationGeo,
+        damageCategory,
+        impactOfDamage,
+        description,
+        photosUrls,
+        status,
+        statusHistory,
+      });
+
+      return c.json({
+        data: report,
+      });
+    },
+  );
 
   router.delete("/:id", reportDeleteParamsValidator, async (c) => {
     const user = c.get("user")!;
